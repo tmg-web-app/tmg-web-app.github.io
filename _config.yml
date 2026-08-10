@@ -1,3 +1,5 @@
-theme: jekyll-theme-minimal
+remote_theme: pages-themes/tactile@v0.2.0
+plugins:
+- jekyll-remote-theme # add this line to the plugins list if you already have one
 title: Tri-State Media Group
 description: Fast, modern, mobile-ready websites built to turn visitors into loyal, paying customers.
