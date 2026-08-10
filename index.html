@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tri-State Media Group</title>
+    <style>
+        /* --- Brand Color Palette --- */
+        :root {
+            --bg-navy: #0F172A; /* Deep Navy for primary background */
+            --accent-blue: #3B82F6; /* Royal Blue for CTAs and icons */
+            --text-slate: #94A3B8; /* Slate Gray for secondary text */
+            --text-white: #F8FAFC; /* Crisp White for headings */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-navy);
+            color: var(--text-white);
+            line-height: 1.6;
+        }
+
+        /* --- Header & Navigation --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            background-color: rgba(15, 23, 42, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .logo-subtext {
+            color: var(--text-slate);
+            font-weight: 300;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: var(--text-white);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--accent-blue);
+        }
+
+        .cta-button {
+            background-color: var(--accent-blue);
+            color: var(--text-white);
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background-color: #2563EB;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            text-align: center;
+            padding: 8rem 5%;
+            /* Subtle radial gradient to simulate a glowing node effect */
+            background: radial-gradient(circle at center, #1E293B 0%, var(--bg-navy) 100%);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .hero p {
+            color: var(--text-slate);
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        /* --- Services Section --- */
+        .services {
+            padding: 5rem 5%;
+            text-align: center;
+        }
+
+        .services h2 {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .service-card {
+            background-color: #1E293B;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+        }
+
+        .service-card h3 {
+            margin-bottom: 1rem;
+        }
+
+        .service-card p {
+            color: var(--text-slate);
+        }
+
+        /* --- Footer --- */
+        footer {
+            background-color: #0B1120;
+            padding: 3rem 5%;
+            text-align: center;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        footer p {
+            color: var(--text-slate);
+            margin-bottom: 0.5rem;
+        }
+
+        footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">TRI-STATE <span class="logo-subtext">MEDIA GROUP</span></div>
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+        <a href="#contact" class="cta-button">Start Your Project</a>
+    </header>
+
+    <section id="home" class="hero">
+        <h1>POWERING YOUR DIGITAL PRESENCE</h1>
+        <p>Comprehensive multimedia solutions tailored for the modern digital landscape.</p>
+        <a href="#services" class="cta-button">Explore Our Services</a>
+    </section>
+
+    <section id="services" class="services">
+        <h2>Our Core Services</h2>
+        <div class="service-grid">
+            <div class="service-card">
+                <div class="service-icon">🎥</div>
+                <h3>Video Production</h3>
+                <p>High-quality video content designed to tell your brand's unique story and engage your target audience.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🎨</div>
+                <h3>Graphic Design</h3>
+                <p>Striking visual assets, including branding, logos, and digital graphics tailored perfectly to your identity.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">💻</div>
+                <h3>Web Development</h3>
+                <p>Responsive, modern websites designed to convert visitors and elevate your online footprint.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer id="contact">
+        <p>&copy; 2026 Tri-State Media Group. All rights reserved.</p>
+        <p>Connect with us on <a href="#">Facebook</a> to see our latest featured projects!</p>
+    </footer>
+
+</body>
+</html>
