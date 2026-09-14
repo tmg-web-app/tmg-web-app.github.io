@@ -1,51 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tri-State Media Group</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tri-State Media Group | Web, Apps & Multimedia</title>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-    <header>
-        <div class="nav-container">
-            <img src="images/4843.png" alt="Tri-State Media Group Icon" class="nav-logo">
-            <button class="mobile-menu-btn" id="menuToggle" aria-label="Toggle Menu">
-                <span class="hamburger"></span>
-            </button>
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="#" class="brand-logo">
+        <img src="images/logo_icon.png" alt="TSMG Icon" class="logo-img">
+        <span class="brand-name">TRI-STATE <span class="accent-text">MEDIA GROUP</span></span>
+      </a>
+      
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle Navigation">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+
+      <nav class="nav-menu" id="navMenu">
+        <a href="#hero" class="nav-link active">Home</a>
+        <a href="#services" class="nav-link">Services</a>
+        <a href="#portfolio" class="nav-link">Portfolio</a>
+        <a href="#contact" class="btn btn-primary">Get Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <section id="hero" class="hero-section">
+    <div class="hero-bg-glow"></div>
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="badge">Innovation Hub</div>
+        <h1 class="hero-title">Powering Your <span class="gradient-text">Digital Presence</span></h1>
+        <p class="hero-subtitle">
+          End-to-end technological and creative solutions designed for scalable growth, from premium web platforms to robust applications.
+        </p>
+        <div class="hero-cta">
+          <a href="#services" class="btn btn-primary">Our Services</a>
+          <a href="#portfolio" class="btn btn-secondary">View Work</a>
         </div>
-        <nav id="mobileNav" class="nav-links">
-            <a href="#home">Home</a>
-            <a href="#services">Services</a>
-            <a href="#contact" class="cta-button">Start Project</a>
-        </nav>
-    </header>
-
-    <section id="home" class="hero">
-        <img src="images/4848.png" alt="Tri-State Media Group Banner" class="hero-banner">
-        <h1>POWERING YOUR DIGITAL PRESENCE</h1>
-        <p>Comprehensive multimedia solutions tailored for the modern digital landscape.</p>
-    </section>
-
-    <section id="services" class="services">
-        <h2>Our Core Services</h2>
-        <div class="service-grid">
-            <div class="service-card">
-                <h3>Video Production</h3>
-                <p>High-quality video content designed to tell your brand's unique story.</p>
-            </div>
-            <div class="service-card">
-                <h3>Graphic Design</h3>
-                <p>Striking visual assets tailored perfectly to your identity.</p>
-            </div>
-            <div class="service-card">
-                <h3>Web Development</h3>
-                <p>Responsive, modern websites designed to elevate your online footprint.</p>
-            </div>
+      </div>
+      <div class="hero-visual">
+        <div class="connection-graphic">
+          <div class="node central-node"><img src="images/logo_icon.png" alt="TSMG" /></div>
+          <div class="node-label label-web">Web Dev</div>
+          <div class="node-label label-apps">Apps</div>
+          <div class="node-label label-media">Media</div>
+          <div class="line line-1"></div>
+          <div class="line line-2"></div>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <script src="js/main.js"></script>
+  <section id="services" class="services-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Core Capabilities</h2>
+        <p>Expertise across critical digital disciplines.</p>
+      </div>
+
+      <div class="services-grid">
+        <div class="service-card" data-tilt>
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+          </div>
+          <h3>Website Development</h3>
+          <p>Custom, high-performance websites built on modern architectures with clean, responsive design.</p>
+          <a href="#" class="card-link">Explore Details &rarr;</a>
+        </div>
+
+        <div class="service-card" data-tilt>
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>Application Programming</h3>
+          <p>Scalable software solutions, API integrations, and robust applications tailored to enterprise needs.</p>
+          <a href="#" class="card-link">Explore Details &rarr;</a>
+        </div>
+
+        <div class="service-card" data-tilt>
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          </div>
+          <h3>Multimedia Services</h3>
+          <p>Rich video production, motion graphics, and dynamic media content for multi-platform delivery.</p>
+          <a href="#" class="card-link">Explore Details &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 Tri-State Media Group. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js" defer></script>
 </body>
 </html>

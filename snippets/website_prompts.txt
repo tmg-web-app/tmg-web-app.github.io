@@ -1,0 +1,11 @@
+rompts for 3 Website Mockups
+Use these prompts in AI image generators (such as Midjourney or DALL-E) to create visual website concepts matching your company's core services:
+
+Mockup 1: Dark Tech Homepage (Main Agency Landing Page)
+Prompt: Modern UI/UX website homepage mockup for "Tri-State Media Group", dark deep navy blue background (#0A0F1D) with electric blue glowing node connections and accent highlights. Clean hero section featuring the headline "Powering Your Digital Presence", high-tech glassmorphic navigation bar, sleek minimalist service cards for Web Development and App Programming, 8k resolution, futuristic tech corporate aesthetic, Behance design showcase style.
+
+Mockup 2: Application Programming & Software Portal
+Prompt: Sleek SaaS product dashboard and application portal website layout, dark mode aesthetic, dark blue background with vibrant blue UI elements, code snippets visual preview, interactive analytics charts, node graph network diagram, highly detailed desktop interface design, professional modern agency design.
+
+Mockup 3: Multimedia & Video Showcase Portfolio
+Prompt: Modern agency portfolio website design showcasing multimedia services, dark theme with high-contrast vibrant blue accents, dynamic video player grid layout, motion design presentation tiles, ultra-clean navigation, sophisticated media agency layout, Figma web design mockup, 4k detail.
