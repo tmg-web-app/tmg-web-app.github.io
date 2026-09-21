@@ -546,6 +546,44 @@ body {
   min-height: calc(100vh - 92px);
 }
 
+.error-page {
+  min-height: calc(100vh - 192px);
+  display: flex;
+  align-items: center;
+}
+
+.error-section {
+  width: 100%;
+  padding: 100px 0;
+  text-align: center;
+}
+
+.error-content {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.error-code {
+  margin: 0 0 10px;
+  color: var(--orange);
+  font-size: clamp(5rem, 18vw, 10rem);
+  font-weight: 800;
+  line-height: 0.9;
+  text-shadow: 0 0 30px rgba(255, 165, 0, 0.3);
+}
+
+.error-content .badge {
+  margin-bottom: 15px;
+}
+
+.error-content .hero-title {
+  margin-bottom: 20px;
+}
+
+.error-content .hero-cta {
+  justify-content: center;
+}
+
 .contact-section {
   padding: 150px 0 100px;
 }
