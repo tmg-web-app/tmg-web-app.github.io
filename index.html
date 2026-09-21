@@ -3,15 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Keywords" content="Web Design, Software Programming, Video Editing, iOS Apps, Android Apps, Cheap Software, Tri-State Media, Kentucky Web Developer">
+  <meta http-equiv="description" content="Tri-State Media Group - Website Development, Desktop Software, Multi-Media Services">  
+ <meta http-equiv="Expires" content="0">
   <title>Tri-State Media Group | Web, Apps & Multimedia</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=20260920">
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
 </head>
 <body>
 
   <header class="navbar">
     <div class="container nav-container">
       <a href="#" class="brand-logo">
-        <img src="images/logo_icon.png" alt="TSMG Icon" class="logo-img">
+        <img src="images/logo_icon_orange.webp" alt="Tri-State Media Group - Website Development, Desktop Software, Multi-Media Services" class="logo-img">
         <span class="brand-name">TRI-STATE <span class="accent-text">MEDIA GROUP</span></span>
       </a>
       
@@ -22,11 +31,11 @@
       </button>
 
       <nav class="nav-menu" id="navMenu">
-        <a href="#hero" class="nav-link active">Home</a>
-        <a href="#services" class="nav-link">Services</a>
-        <a href="#portfolio" class="nav-link">Portfolio</a>
-        <a href="#contact" class="btn btn-primary">Get Started</a>
-      </nav>
+                    <a href="#hero" class="nav-link active">Home</a>
+                    <a href="#services" class="nav-link">Services</a>
+                    <a href="#examples" class="nav-link">Examples</a>
+                    <a href="contact.html" class="btn btn-primary cta-start">Get Started</a>
+                  </nav>
     </div>
   </header>
 
@@ -41,15 +50,16 @@
         </p>
         <div class="hero-cta">
           <a href="#services" class="btn btn-primary">Our Services</a>
-          <a href="#portfolio" class="btn btn-secondary">View Work</a>
+          <a href="#examples" class="btn btn-secondary">View Work</a>
         </div>
       </div>
       <div class="hero-visual">
-        <div class="connection-graphic">
-          <div class="node central-node"><img src="images/logo_icon.png" alt="TSMG" /></div>
-          <div class="node-label label-web">Web Dev</div>
-          <div class="node-label label-apps">Apps</div>
-          <div class="node-label label-media">Media</div>
+        <div class="connection-graphic" id="connection-animation">
+          <img class="connection-icon" src="images/logo_icon_orange.webp" alt="" aria-hidden="true">
+          <div class="node central-node" id="node-center"><img src="images/logo_icon_orange.webp" alt="TSMG - Get Connected!!!!" /></div>
+          <div class="node-label label-web">Web Development</div>
+          <div class="node-label label-apps">Software Apps</div>
+          <div class="node-label label-media">Stunning Media</div>
           <div class="line line-1"></div>
           <div class="line line-2"></div>
         </div>
@@ -66,41 +76,96 @@
 
       <div class="services-grid">
         <div class="service-card" data-tilt>
-          <div class="card-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
-          </div>
-          <h3>Website Development</h3>
+                  <div class="card-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+                  </div>
+                  <h3>Website Development</h3>
           <p>Custom, high-performance websites built on modern architectures with clean, responsive design.</p>
           <a href="#" class="card-link">Explore Details &rarr;</a>
         </div>
 
         <div class="service-card" data-tilt>
-          <div class="card-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          </div>
-          <h3>Application Programming</h3>
+                  <div class="card-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  </div>
+                  <h3>Application Programming</h3>
           <p>Scalable software solutions, API integrations, and robust applications tailored to enterprise needs.</p>
           <a href="#" class="card-link">Explore Details &rarr;</a>
         </div>
 
         <div class="service-card" data-tilt>
-          <div class="card-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-          </div>
-          <h3>Multimedia Services</h3>
+                  <div class="card-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                  </div>
+                  <h3>Multimedia Services</h3>
           <p>Rich video production, motion graphics, and dynamic media content for multi-platform delivery.</p>
           <a href="#" class="card-link">Explore Details &rarr;</a>
         </div>
       </div>
     </div>
   </section>
-
-  <footer class="footer">
+  
+  <section id="examples" class="examples-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Our Work</h2>
+          <p>See what we've created for clients like you.</p>
+        </div>
+  
+        <div class="examples-grid">
+          <div class="example-card" data-tilt>
+                    <div class="card-icon">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+                    </div>
+                    <h3>Website Redesign</h3>
+            <p>Modernized a legacy site for a local business, increasing engagement by 40%.</p>
+            <a href="#" class="card-link">View Case Study &rarr;</a>
+            <hr class="case-study-divider">
+          </div>
+  
+          <div class="example-card" data-tilt>
+                    <div class="card-icon">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    </div>
+                    <h3>Custom CRM Application</h3>
+            <p>Built a tailored CRM system that streamlined sales processes for a mid-sized company.</p>
+            <a href="#" class="card-link">View Case Study &rarr;</a>
+            <hr class="case-study-divider">
+          </div>
+  
+          <div class="example-card" data-tilt>
+                    <div class="card-icon">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                    </div>
+                    <h3>Product Launch Video</h3>
+            <p>Produced a compelling video campaign that drove pre-orders for a new tech product.</p>
+            <a href="#" class="card-link">View Case Study &rarr;</a>
+            <hr class="case-study-divider">
+          </div>
+        </div>
+      </div>
+    </section>
+  
+    <footer class="footer">
     <div class="container">
-      <p>&copy; 2026 Tri-State Media Group. All rights reserved.</p>
-    </div>
-  </footer>
+      <p>&copy; <span class="current-year"></span> Tri-State Media Group. All rights reserved.</p>
+        <nav class="social-links" aria-label="Social media">
+          <a href="https://www.facebook.com/" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+            <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M14 8h3V4h-3c-3.3 0-5 1.7-5 5v3H6v4h3v4h4v-4h3l1-4h-4V9c0-.7.3-1 1-1Z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+            <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/" aria-label="LinkedIn" target="_blank" rel="noopener noreferrer">
+            <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M6 8v10M6 5.5v.1M10 18v-6a3 3 0 0 1 6 0v6M10 12V8"/></svg>
+          </a>
+          <a href="https://x.com/" aria-label="X" target="_blank" rel="noopener noreferrer">
+            <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="m5 4 14 16M19 4 5 20"/></svg>
+          </a>
+        </nav>
+      </div>
+    </footer>
 
-  <script src="js/main.js" defer></script>
+  <script src="js/main.js?v=20260920" defer></script>
 </body>
 </html>
