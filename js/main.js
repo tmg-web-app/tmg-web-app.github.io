@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (targetElement) {
         // Close mobile menu if open
-        if (navMenu.classList.contains('open')) {
+        if (navMenu && navMenu.classList.contains('open')) {
           navMenu.classList.remove('open');
         }
         
@@ -54,7 +54,4 @@ document.addEventListener('DOMContentLoaded', () => {
       field.setCustomValidity('');
     });
   }
-
-  // Placeholder for advanced animations (e.g., node interaction)
-  console.log("Tri-State Media Group - Modern Tech Site Loaded");
 });
