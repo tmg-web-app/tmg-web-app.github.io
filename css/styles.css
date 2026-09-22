@@ -392,24 +392,33 @@ body {
 
 .line {
   position: absolute;
-  background: var(--primary-blue);
-  opacity: 0.5;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-blue), var(--light-blue));
+  box-shadow: 0 0 8px var(--border-glow);
+  opacity: 0.75;
+  transform-origin: left center;
   z-index: 1;
 }
 
 .line-1 {
-  width: 2px;
-  height: 120px;
-  top: 50px;
-  left: 50%;
-  transform: translateX(-50%);
+  width: 64px;
+  top: 36px;
+  left: 150px;
+  transform: rotate(90deg);
 }
 
 .line-2 {
-  height: 2px;
-  width: 150px;
-  top: 150px;
-  left: 75px;
+  width: 83px;
+  top: 264px;
+  left: 90px;
+  transform: rotate(-72deg);
+}
+
+.line-3 {
+  width: 82px;
+  top: 264px;
+  left: 206px;
+  transform: rotate(-105deg);
 }
 
 /* Services Grid with Tech Aesthetics */
@@ -658,6 +667,40 @@ body {
   border: 0;
   cursor: pointer;
   justify-self: start;
+}
+
+.contact-form-trap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.thank-you-page {
+  min-height: calc(100vh - 92px);
+}
+
+.thank-you-section {
+  min-height: calc(100vh - 192px);
+  display: flex;
+  align-items: center;
+  padding: 120px 0 80px;
+  text-align: center;
+}
+
+.thank-you-content {
+  max-width: 760px;
+}
+
+.thank-you-content .badge {
+  margin-bottom: 20px;
+}
+
+.thank-you-content .hero-subtitle {
+  margin: 0 auto 30px;
+  max-width: 540px;
 }
 
 /* Responsive Styles */

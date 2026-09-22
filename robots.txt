@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /snippets/
+
+Allow: /
+
+Sitemap: https://tmg-web-app.github.io/sitemap.xml
