@@ -1,0 +1,6 @@
+name = "tmg-contact-form"
+main = "src/index.js"
+compatibility_date = "2026-09-21"
+
+[[send_email]]
+name = "SEND_EMAIL"
