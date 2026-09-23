@@ -51,7 +51,8 @@
           </div>
         </div>
 
-        <form class="contact-form" action="https://tmg-contact-form.YOUR_ACCOUNT_SUBDOMAIN.workers.dev/contact" method="post">
+        <form class="contact-form" id="contactForm" data-endpoint="
+email-tsms-076.tmg-web-app.workers.dev/contact">
           <div class="form-field">
             <label for="name">Name <span aria-hidden="true">*</span></label>
             <input id="name" name="name" type="text" autocomplete="name" required data-required-message="Name is required.">
@@ -84,6 +85,7 @@
           </div>
 
           <button class="btn btn-primary form-submit" type="submit">Send an eMail</button>
+          <p class="form-status" id="formStatus" role="status" aria-live="polite" aria-atomic="true"></p>
         </form>
       </div>
     </section>

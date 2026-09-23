@@ -1,19 +1,63 @@
 const MAX_FIELD_LENGTH = 160;
 const MAX_MESSAGE_LENGTH = 5_000;
+// Hard cap on the request body size, well above what a legitimate submission needs.
+const MAX_BODY_BYTES = 20_000;
 
-function value(form, field, maximumLength, allowNewlines = false) {
-  const rawValue = form.get(field);
-  const normalizedValue = typeof rawValue === "string" ? rawValue.trim() : "";
+function parseAllowedOrigins(env) {
+  return (env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
 
-  if (!allowNewlines && /[\r\n]/.test(normalizedValue)) {
-    throw new Error(`${field} contains invalid characters.`);
+function matchAllowedOrigin(request, env) {
+  const origin = request.headers.get("origin");
+  if (!origin) {
+    return null;
   }
 
-  if (normalizedValue.length > maximumLength) {
-    throw new Error(`${field} is too long.`);
+  const allowed = parseAllowedOrigins(env);
+  return allowed.includes(origin) ? origin : null;
+}
+
+function corsHeaders(allowedOrigin) {
+  if (!allowedOrigin) {
+    return {};
   }
 
-  return normalizedValue;
+  return {
+    "access-control-allow-origin": allowedOrigin,
+    vary: "Origin",
+  };
+}
+
+function jsonResponse(body, status, allowedOrigin) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=UTF-8",
+      ...corsHeaders(allowedOrigin),
+    },
+  });
+}
+
+function field(data, key, maxLength, { required = false, allowNewlines = false } = {}) {
+  const raw = data[key];
+  const normalized = typeof raw === "string" ? raw.trim() : "";
+
+  if (required && !normalized) {
+    throw new Error(`${key} is required.`);
+  }
+
+  if (!allowNewlines && /[\r\n]/.test(normalized)) {
+    throw new Error(`${key} contains invalid characters.`);
+  }
+
+  if (normalized.length > maxLength) {
+    throw new Error(`${key} is too long.`);
+  }
+
+  return normalized;
 }
 
 function emailContent({ name, email, service, message }) {
@@ -29,48 +73,95 @@ function emailContent({ name, email, service, message }) {
   ].join("\n");
 }
 
-function errorResponse(message, status = 400) {
-  return new Response(message, {
-    status,
-    headers: { "content-type": "text/plain; charset=UTF-8" },
-  });
+function isValidationError(error) {
+  return (
+    error instanceof Error &&
+    (error.message.endsWith("is required.") ||
+      error.message.endsWith("is too long.") ||
+      error.message.endsWith("contains invalid characters."))
+  );
 }
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const allowedOrigin = matchAllowedOrigin(request, env);
 
     if (url.pathname !== "/contact") {
-      return errorResponse("Not found.", 404);
+      return jsonResponse({ ok: false, error: "Not found." }, 404, allowedOrigin);
+    }
+
+    if (request.method === "OPTIONS") {
+      if (!allowedOrigin) {
+        return new Response(null, { status: 403 });
+      }
+
+      return new Response(null, {
+        status: 204,
+        headers: {
+          ...corsHeaders(allowedOrigin),
+          "access-control-allow-methods": "POST, OPTIONS",
+          "access-control-allow-headers": "Content-Type",
+          "access-control-max-age": "86400",
+        },
+      });
     }
 
     if (request.method !== "POST") {
-      return errorResponse("Method not allowed.", 405);
+      return jsonResponse({ ok: false, error: "Method not allowed." }, 405, allowedOrigin);
+    }
+
+    // Restrict to the configured site origin(s); anything else is rejected outright.
+    if (!allowedOrigin) {
+      return jsonResponse({ ok: false, error: "Origin not allowed." }, 403, null);
     }
 
     const contentType = request.headers.get("content-type") || "";
-    if (!contentType.includes("application/x-www-form-urlencoded") && !contentType.includes("multipart/form-data")) {
-      return errorResponse("Unsupported form submission.", 415);
+    if (!contentType.toLowerCase().includes("application/json")) {
+      return jsonResponse({ ok: false, error: "Unsupported content type." }, 415, allowedOrigin);
+    }
+
+    const contentLength = Number(request.headers.get("content-length") || 0);
+    if (contentLength > MAX_BODY_BYTES) {
+      return jsonResponse({ ok: false, error: "Payload too large." }, 413, allowedOrigin);
+    }
+
+    let bodyText;
+    try {
+      bodyText = await request.text();
+    } catch {
+      return jsonResponse({ ok: false, error: "Unable to read request body." }, 400, allowedOrigin);
+    }
+
+    if (bodyText.length > MAX_BODY_BYTES) {
+      return jsonResponse({ ok: false, error: "Payload too large." }, 413, allowedOrigin);
+    }
+
+    let data;
+    try {
+      data = JSON.parse(bodyText);
+    } catch {
+      return jsonResponse({ ok: false, error: "Invalid JSON payload." }, 400, allowedOrigin);
+    }
+
+    if (typeof data !== "object" || data === null || Array.isArray(data)) {
+      return jsonResponse({ ok: false, error: "Invalid JSON payload." }, 400, allowedOrigin);
     }
 
     try {
-      const form = await request.formData();
-      const name = value(form, "name", MAX_FIELD_LENGTH);
-      const email = value(form, "email", MAX_FIELD_LENGTH);
-      const service = value(form, "service", MAX_FIELD_LENGTH);
-      const message = value(form, "message", MAX_MESSAGE_LENGTH, true);
-      const honeypot = value(form, "website", MAX_FIELD_LENGTH);
+      const name = field(data, "name", MAX_FIELD_LENGTH, { required: true });
+      const email = field(data, "email", MAX_FIELD_LENGTH, { required: true });
+      const service = field(data, "service", MAX_FIELD_LENGTH);
+      const message = field(data, "message", MAX_MESSAGE_LENGTH, { required: true, allowNewlines: true });
+      const honeypot = field(data, "website", MAX_FIELD_LENGTH);
 
       if (honeypot) {
-        return Response.redirect(env.THANK_YOU_URL, 303);
-      }
-
-      if (!name || !email || !message) {
-        return errorResponse("Name, email, and project details are required.");
+        // Silently accept bot submissions without sending an email.
+        return jsonResponse({ ok: true }, 200, allowedOrigin);
       }
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return errorResponse("Enter a valid email address.");
+        return jsonResponse({ ok: false, error: "Enter a valid email address." }, 400, allowedOrigin);
       }
 
       await env.SEND_EMAIL.send({
@@ -80,14 +171,19 @@ export default {
         subject: "New website contact request",
         text: emailContent({ name, email, service, message }),
       });
-      return Response.redirect(env.THANK_YOU_URL, 303);
+
+      return jsonResponse({ ok: true }, 200, allowedOrigin);
     } catch (error) {
-      if (error instanceof Error && (error.message.endsWith("is too long.") || error.message.endsWith("contains invalid characters."))) {
-        return errorResponse(error.message);
+      if (isValidationError(error)) {
+        return jsonResponse({ ok: false, error: error.message }, 400, allowedOrigin);
       }
 
       console.error("Contact email delivery failed.", error);
-      return errorResponse("Unable to send your message right now. Please try again later.", 502);
+      return jsonResponse(
+        { ok: false, error: "Unable to send your message right now. Please try again later." },
+        502,
+        allowedOrigin
+      );
     }
   },
 };

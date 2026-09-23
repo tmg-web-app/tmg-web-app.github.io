@@ -2,5 +2,10 @@ name = "tmg-contact-form"
 main = "src/index.js"
 compatibility_date = "2026-09-21"
 
+# Comma-separated list of origins allowed to call this Worker with CORS.
+# Update this to match the domain(s) that serve contact.html.
+[vars]
+ALLOWED_ORIGINS = "https://www.mediagroup.dev,https://tmg-web-app.github.io"
+
 [[send_email]]
-name = "SEND_EMAIL"
+name = "form@mediagroup.dev"

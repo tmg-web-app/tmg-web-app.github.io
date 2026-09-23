@@ -669,6 +669,32 @@ body {
   justify-self: start;
 }
 
+.form-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-status {
+  min-height: 1.2em;
+  font-weight: 600;
+}
+
+.form-status:empty {
+  display: none;
+}
+
+.form-status-pending {
+  color: var(--text-secondary);
+}
+
+.form-status-success {
+  color: var(--light-blue);
+}
+
+.form-status-error {
+  color: var(--orange);
+}
+
 .contact-form-trap {
   position: absolute;
   width: 1px;
