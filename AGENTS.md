@@ -34,6 +34,7 @@ GitHub Pages serves `index.html` directly (the static HTML site). `_config.yml` 
 - `images/` — logo and badge assets
 - `snippets/` — design prompts and favicon snippet (reference only)
 - `research/` — research documents (competitive intel, market studies). **Always commit and index this folder** — never gitignore or exclude it; new research files go in here and get committed.
+  - **Naming convention (Firecrawl/workflow-generated `.md` files):** `YYYY-MM-DD-<topic-slug>.md` — e.g. `2026-10-23-competitive-intel.md`. ISO date prefix (sorts chronologically) + kebab-case topic slug. The inner "Generated:" date in the doc should match the filename.
 - `.dyad/` — Dyad AI tool screenshots (`.gitignore`d)
 
 ## Styling
