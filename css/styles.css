@@ -244,6 +244,7 @@ body {
 }
 
 .btn-secondary {
+  background: rgba(10, 15, 29, 0.55);
   border: 1px solid var(--silver-main);
   color: var(--silver-light);
 }
@@ -335,6 +336,71 @@ body {
   height: 300px;
 }
 
+/* Spinning promo sticker crowning the hero visual */
+.hero-promo-sticker {
+  position: absolute;
+  top: -38px;
+  left: -38px;
+  width: 118px;
+  height: 118px;
+  z-index: 3;
+  cursor: pointer;
+  transition: transform 0.25s ease;
+}
+
+.hero-promo-sticker:hover {
+  transform: scale(1.08);
+}
+
+.hero-promo-sticker:focus-visible {
+  outline: 2px solid var(--light-blue);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+.hero-promo-sticker:active {
+  transform: scale(0.96);
+}
+
+.sticker-ring {
+  width: 100%;
+  height: 100%;
+  animation: sticker-spin 18s linear infinite;
+}
+
+.sticker-ring text {
+  fill: var(--orange);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.sticker-core {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--orange);
+  font-weight: 800;
+  font-size: 1.05rem;
+  line-height: 1.15;
+}
+
+@keyframes sticker-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker-ring {
+    animation: none;
+  }
+}
+
 .connection-icon {
   position: absolute;
   top: 50%;
@@ -423,7 +489,28 @@ body {
 
 /* Services Grid with Tech Aesthetics */
 .services-section {
-  padding: 100px 0;
+  position: relative;
+  padding: 40px 0 100px;
+}
+
+/* Second hero header for the services section */
+.services-hero {
+  position: relative;
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto 60px;
+}
+
+.services-hero .hero-title {
+  font-size: clamp(2.2rem, 6vw, 3.2rem);
+}
+
+.services-hero .hero-subtitle {
+  margin-bottom: 0;
+}
+
+.services-hero-glow {
+  top: -260px;
 }
 
 .section-header {
@@ -491,6 +578,22 @@ body {
   background: var(--light-blue);
   opacity: 0.45;
   margin-bottom: 15px;
+}
+
+.promo-card {
+  border-color: var(--orange);
+  box-shadow: 0 0 30px rgba(255, 165, 0, 0.15);
+}
+
+.promo-card .badge-orange {
+  margin-bottom: 15px;
+}
+
+.promo-card .price-tag {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--orange);
+  margin-bottom: 10px;
 }
 
 /* Footer */
@@ -762,3 +865,163 @@ body {
     display: flex;
   }
 }
+/* ── Promo modal ─────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(5, 10, 24, 0.72);
+  backdrop-filter: blur(10px);
+  animation: modal-fade 250ms ease both;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-dialog {
+  position: relative;
+  max-width: 460px;
+  width: 100%;
+  padding: 42px 36px 36px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(20, 28, 52, 0.92), rgba(10, 16, 34, 0.95));
+  border: 1px solid rgba(255, 165, 0, 0.35);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 60px rgba(255, 165, 0, 0.12);
+  animation: modal-pop 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  text-align: center;
+}
+
+.modal-dialog::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(90deg, var(--orange), var(--primary-blue), var(--light-blue), var(--orange));
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 200ms ease, transform 300ms ease;
+}
+
+.modal-close:hover,
+.modal-close:focus-visible {
+  background: rgba(255, 165, 0, 0.25);
+  transform: rotate(90deg);
+}
+
+.modal-badge {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(255, 165, 0, 0.15);
+  border: 1px solid rgba(255, 165, 0, 0.4);
+  color: var(--orange);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.modal-title {
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.modal-topic {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.modal-topic .accent {
+  color: var(--orange);
+  font-weight: 700;
+}
+
+.modal-perks {
+  list-style: none;
+  text-align: left;
+  max-width: 320px;
+  margin: 0 auto 24px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.modal-perks li {
+  position: relative;
+  padding-left: 26px;
+}
+
+.modal-perks li::before {
+  content: "\2713";
+  position: absolute;
+  left: 0;
+  color: var(--orange);
+  font-weight: 800;
+}
+
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.modal-actions .btn {
+  margin: 0;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal-dialog {
+    animation: none;
+  }
+
+  .modal-close:hover,
+  .modal-close:focus-visible {
+    transform: none;
+  }
+}
+/* ── End promo modal ─────────────────────────────────────── */

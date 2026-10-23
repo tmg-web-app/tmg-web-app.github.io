@@ -1,0 +1,16 @@
+# Dependency + local tooling
+node_modules/
+.agents/
+.dyad/
+.firecrawl/
+skills-lock.json
+
+# Secrets / env files - never commit
+.dev.vars
+*.dev.vars
+.env
+.env.*
+
+# Backups / scratch
+contact-worker-backup/
+snippets/
