@@ -33,6 +33,7 @@ GitHub Pages serves `index.html` directly (the static HTML site). `_config.yml` 
 - `src/main.tsx` — React root mount
 - `images/` — logo and badge assets
 - `snippets/` — design prompts and favicon snippet (reference only)
+- `research/` — research documents (competitive intel, market studies). **Always commit and index this folder** — never gitignore or exclude it; new research files go in here and get committed.
 - `.dyad/` — Dyad AI tool screenshots (`.gitignore`d)
 
 ## Styling
