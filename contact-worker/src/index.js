@@ -16,12 +16,13 @@ function value(form, field, maximumLength, allowNewlines = false) {
   return normalizedValue;
 }
 
-function emailContent({ name, email, service, message }) {
+function emailContent({ name, email, phone, service, message }) {
   return [
     "New contact request",
     "",
     `Name: ${name}`,
     `Email: ${email}`,
+    `Phone: ${phone || "Not provided"}`,
     `Service: ${service || "Not specified"}`,
     "",
     "Project details:",
@@ -57,6 +58,7 @@ export default {
       const form = await request.formData();
       const name = value(form, "name", MAX_FIELD_LENGTH);
       const email = value(form, "email", MAX_FIELD_LENGTH);
+      const phone = value(form, "phone", MAX_FIELD_LENGTH);
       const service = value(form, "service", MAX_FIELD_LENGTH);
       const message = value(form, "message", MAX_MESSAGE_LENGTH, true);
       const honeypot = value(form, "website", MAX_FIELD_LENGTH);
@@ -78,7 +80,7 @@ export default {
         from: env.CONTACT_SENDER,
         replyTo: email,
         subject: "New website contact request",
-        text: emailContent({ name, email, service, message }),
+        text: emailContent({ name, email, phone, service, message }),
       });
       return Response.redirect(env.THANK_YOU_URL, 303);
     } catch (error) {
