@@ -8,3 +8,8 @@ routes = [
 
 [[send_email]]
 name = "SEND_EMAIL"
+
+[vars]
+CONTACT_SENDER = "contact@mediagroup.dev"
+CONTACT_RECIPIENT = "tmg.web.app@gmail.com"
+THANK_YOU_URL = "https://www.mediagroup.dev/thanks.html"

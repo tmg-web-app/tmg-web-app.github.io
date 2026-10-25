@@ -1,6 +1,30 @@
 const MAX_FIELD_LENGTH = 160;
 const MAX_MESSAGE_LENGTH = 5_000;
 
+const ALLOWED_ORIGINS = [
+  "https://www.mediagroup.dev",
+  "https://mediagroup.dev",
+  "https://tmg-web-app.github.io",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+
+function corsHeaders(request) {
+  const origin = request.headers.get("origin") || "";
+  const headers = {
+    "access-control-allow-methods": "POST, OPTIONS",
+    "access-control-allow-headers": "Content-Type, Accept, X-Requested-With",
+    "access-control-max-age": "86400",
+    vary: "Origin",
+  };
+
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    headers["access-control-allow-origin"] = origin;
+  }
+
+  return headers;
+}
+
 function value(form, field, maximumLength, allowNewlines = false) {
   const rawValue = form.get(field);
   const normalizedValue = typeof rawValue === "string" ? rawValue.trim() : "";
@@ -63,13 +87,14 @@ function emailContent({ name, email, phone, service, message, submittedFields })
   ].join("\n");
 }
 
-function errorResponse(message, status = 400, asJson = false) {
+function errorResponse(message, status = 400, asJson = false, extraHeaders = {}) {
   if (asJson) {
     return new Response(JSON.stringify({ ok: false, message }), {
       status,
       headers: {
         "content-type": "application/json; charset=UTF-8",
         "cache-control": "no-store",
+        ...extraHeaders,
       },
     });
   }
@@ -79,11 +104,12 @@ function errorResponse(message, status = 400, asJson = false) {
     headers: {
       "content-type": "text/plain; charset=UTF-8",
       "cache-control": "no-store",
+      ...extraHeaders,
     },
   });
 }
 
-function successResponse(message, env, asJson = false) {
+function successResponse(message, env, asJson = false, extraHeaders = {}) {
   const redirect = redirectTarget(env);
 
   if (asJson) {
@@ -92,6 +118,7 @@ function successResponse(message, env, asJson = false) {
       headers: {
         "content-type": "application/json; charset=UTF-8",
         "cache-control": "no-store",
+        ...extraHeaders,
       },
     });
   }
@@ -103,18 +130,23 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const asJson = wantsJsonResponse(request);
+    const cors = corsHeaders(request);
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: cors });
+    }
 
     if (url.pathname !== "/contact") {
-      return errorResponse("Not found.", 404, asJson);
+      return errorResponse("Not found.", 404, asJson, cors);
     }
 
     if (request.method !== "POST") {
-      return errorResponse("Method not allowed.", 405, asJson);
+      return errorResponse("Method not allowed.", 405, asJson, cors);
     }
 
     const contentType = request.headers.get("content-type") || "";
     if (!contentType.includes("application/x-www-form-urlencoded") && !contentType.includes("multipart/form-data")) {
-      return errorResponse("Unsupported form submission.", 415, asJson);
+      return errorResponse("Unsupported form submission.", 415, asJson, cors);
     }
 
     try {
@@ -128,15 +160,15 @@ export default {
       const honeypot = value(form, "website", MAX_FIELD_LENGTH);
 
       if (honeypot) {
-        return successResponse("Thanks!", env, asJson);
+        return successResponse("Thanks!", env, asJson, cors);
       }
 
       if (!name || !email || !message) {
-        return errorResponse("Name, email, and project details are required.", 400, asJson);
+        return errorResponse("Name, email, and project details are required.", 400, asJson, cors);
       }
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return errorResponse("Enter a valid email address.", 400, asJson);
+        return errorResponse("Enter a valid email address.", 400, asJson, cors);
       }
 
       await env.SEND_EMAIL.send({
@@ -146,14 +178,14 @@ export default {
         subject: "New website contact request",
         text: emailContent({ name, email, phone, service, message, submittedFields }),
       });
-      return successResponse("Thanks! Your message has been sent.", env, asJson);
+      return successResponse("Thanks! Your message has been sent.", env, asJson, cors);
     } catch (error) {
       if (error instanceof Error && (error.message.endsWith("is too long.") || error.message.endsWith("contains invalid characters."))) {
-        return errorResponse(error.message, 400, asJson);
+        return errorResponse(error.message, 400, asJson, cors);
       }
 
       console.error("Contact email delivery failed.", error);
-      return errorResponse("Unable to send your message right now. Please try again later.", 502, asJson);
+      return errorResponse("Unable to send your message right now. Please try again later.", 502, asJson, cors);
     }
   },
 };
