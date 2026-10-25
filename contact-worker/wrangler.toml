@@ -2,5 +2,9 @@ name = "tmg-contact-form"
 main = "src/index.js"
 compatibility_date = "2026-09-21"
 
+routes = [
+  { pattern = "forms.mediagroup.dev/contact*", zone_name = "mediagroup.dev" }
+]
+
 [[send_email]]
 name = "SEND_EMAIL"
