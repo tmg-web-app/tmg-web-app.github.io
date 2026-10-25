@@ -103,6 +103,57 @@ document.addEventListener('DOMContentLoaded', () => {
   // Smooth Scrolling for Anchors
   const scrollLinks = document.querySelectorAll('a[href^="#"]:not(.promo-trigger)');
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const heroVideo = document.querySelector('.hero-video');
+  if (heroVideo && prefersReducedMotion) {
+    heroVideo.removeAttribute('autoplay');
+    heroVideo.pause();
+    heroVideo.currentTime = 0;
+  } else if (heroVideo) {
+    // Play the full video once, then loop only the final 4 seconds.
+    // A pre-seeked standby copy cross-fades in near the end so the loop has no seek stall.
+    const loopSeconds = 4;
+    const fadeSeconds = 0.4;
+    const standby = heroVideo.cloneNode();
+    standby.removeAttribute('autoplay');
+    standby.removeAttribute('aria-label');
+    standby.setAttribute('aria-hidden', 'true');
+    standby.classList.add('is-standby');
+    heroVideo.after(standby);
+
+    const loopStart = (video) => Math.max(0, video.duration - loopSeconds);
+    const primeStandby = (video) => {
+      video.pause();
+      video.currentTime = loopStart(video);
+    };
+    standby.addEventListener('loadedmetadata', () => primeStandby(standby), { once: true });
+
+    let active = heroVideo;
+    let idle = standby;
+    let swapping = false;
+
+    const swap = () => {
+      swapping = true;
+      const previous = active;
+      idle.play();
+      idle.classList.remove('is-standby');
+      previous.classList.add('is-standby');
+      active = idle;
+      idle = previous;
+      setTimeout(() => {
+        primeStandby(previous);
+        swapping = false;
+      }, fadeSeconds * 1000 + 100);
+    };
+
+    const watch = () => {
+      if (!swapping && active.duration && active.currentTime >= active.duration - fadeSeconds) {
+        swap();
+      }
+      requestAnimationFrame(watch);
+    };
+    requestAnimationFrame(watch);
+  }
   
   for (const link of scrollLinks) {
     link.addEventListener('click', (e) => {

@@ -3,4 +3,4 @@ Disallow: /snippets/
 
 Allow: /
 
-Sitemap: https://tmg-web-app.github.io/sitemap.xml
+Sitemap: https://www.mediagroup.dev/sitemap.xml
