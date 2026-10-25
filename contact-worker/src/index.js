@@ -16,7 +16,31 @@ function value(form, field, maximumLength, allowNewlines = false) {
   return normalizedValue;
 }
 
-function emailContent({ name, email, phone, service, message }) {
+function redirectTarget(env) {
+  return env.THANK_YOU_URL || "https://tmg-web-app.github.io/thanks.html";
+}
+
+function normalizedFormSnapshot(form) {
+  const snapshot = {};
+
+  for (const [field, rawValue] of form.entries()) {
+    if (typeof rawValue !== "string") {
+      snapshot[field] = "[binary value omitted]";
+      continue;
+    }
+
+    const cleaned = rawValue.trim().replace(/[\r\n]+/g, " ");
+    snapshot[field] = cleaned;
+  }
+
+  return snapshot;
+}
+
+function emailContent({ name, email, phone, service, message, submittedFields }) {
+  const submitted = Object.entries(submittedFields)
+    .filter(([field]) => field !== "website")
+    .map(([field, fieldValue]) => `${field}: ${fieldValue || "(empty)"}`);
+
   return [
     "New contact request",
     "",
@@ -27,6 +51,9 @@ function emailContent({ name, email, phone, service, message }) {
     "",
     "Project details:",
     message,
+    "",
+    "Submitted fields:",
+    ...submitted,
   ].join("\n");
 }
 
@@ -56,6 +83,7 @@ export default {
 
     try {
       const form = await request.formData();
+      const submittedFields = normalizedFormSnapshot(form);
       const name = value(form, "name", MAX_FIELD_LENGTH);
       const email = value(form, "email", MAX_FIELD_LENGTH);
       const phone = value(form, "phone", MAX_FIELD_LENGTH);
@@ -64,7 +92,7 @@ export default {
       const honeypot = value(form, "website", MAX_FIELD_LENGTH);
 
       if (honeypot) {
-        return Response.redirect(env.THANK_YOU_URL, 303);
+        return Response.redirect(redirectTarget(env), 303);
       }
 
       if (!name || !email || !message) {
@@ -80,9 +108,9 @@ export default {
         from: env.CONTACT_SENDER,
         replyTo: email,
         subject: "New website contact request",
-        text: emailContent({ name, email, phone, service, message }),
+        text: emailContent({ name, email, phone, service, message, submittedFields }),
       });
-      return Response.redirect(env.THANK_YOU_URL, 303);
+      return Response.redirect(redirectTarget(env), 303);
     } catch (error) {
       if (error instanceof Error && (error.message.endsWith("is too long.") || error.message.endsWith("contains invalid characters."))) {
         return errorResponse(error.message);
