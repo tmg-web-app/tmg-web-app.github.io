@@ -43,6 +43,37 @@ name = "SEND_EMAIL"
 
 If `env.SEND_EMAIL` is `undefined` at runtime, the binding is missing from the deployed Worker — redeploy after confirming the block above is present.
 
+## Database
+
+Submissions are stored in the `db_contact_form` D1 database, bound as `env.DB`:
+
+```toml
+[[d1_databases]]
+binding = "DB"
+database_name = "db_contact_form"
+database_id = "5492eab5-eb15-49c1-ba15-0220fd9a62d5"
+```
+
+Each accepted submission (one that passes validation and is not a honeypot match) is inserted into `table_contact_schema` after the email is sent:
+
+| Column      | Source                    |
+| ----------- | ------------------------- |
+| `c_id`      | Auto-increment primary key |
+| `c_date`    | ISO 8601 timestamp at insert |
+| `c_name`    | `name` form field         || `c_email`   | `email` form field        |
+| `c_service` | `service` form field (null when empty) |
+| `c_message` | `message` form field      |
+| `c_phone`   | `phone` form field (null when empty) |
+
+The insert runs **after** the email send. If it fails, the error is logged and the visitor still sees success, because the email has already been dispatched.
+
+### Inspect stored submissions
+
+```sh
+npx wrangler d1 execute db_contact_form --remote \
+  --command="SELECT c_id, c_date, c_name, c_email, c_service FROM table_contact_schema ORDER BY c_id DESC LIMIT 20"
+```
+
 ### Email Routing prerequisites
 
 Before the first `send()` can succeed, all of the following must be true **in the same Cloudflare account that hosts the Worker**:

@@ -88,6 +88,15 @@ function emailContent({ name, email, phone, service, message, submittedFields })
   ].join("\n");
 }
 
+function storeSubmission(env, { name, email, phone, service, message }) {
+  return env.DB.prepare(
+    `INSERT INTO table_contact_schema (c_date, c_name, c_email, c_service, c_message, c_phone)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+  )
+    .bind(new Date().toISOString(), name, email, service || null, message, phone || null)
+    .run();
+}
+
 function errorResponse(message, status = 400, asJson = false, extraHeaders = {}) {
   if (asJson) {
     return new Response(JSON.stringify({ ok: false, message }), {
@@ -180,6 +189,13 @@ export default {
         subject: "New website contact request",
         text: emailContent({ name, email, phone, service, message, submittedFields }),
       });
+
+      try {
+        await storeSubmission(env, { name, email, phone, service, message });
+      } catch (error) {
+        console.error("Contact submission could not be stored.", error);
+      }
+
       return successResponse("Thanks! Your message has been sent.", env, asJson, cors);
     } catch (error) {
       if (error instanceof Error && (error.message.endsWith("is too long.") || error.message.endsWith("contains invalid characters."))) {
