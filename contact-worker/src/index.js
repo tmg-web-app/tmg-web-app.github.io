@@ -1,5 +1,6 @@
 const MAX_FIELD_LENGTH = 160;
 const MAX_MESSAGE_LENGTH = 5_000;
+const HONEYPOT_FIELD = "tmg_hp_note";
 
 const ALLOWED_ORIGINS = [
   "https://www.mediagroup.dev",
@@ -68,7 +69,7 @@ function normalizedFormSnapshot(form) {
 
 function emailContent({ name, email, phone, service, message, submittedFields }) {
   const submitted = Object.entries(submittedFields)
-    .filter(([field]) => field !== "website")
+    .filter(([field]) => field !== HONEYPOT_FIELD)
     .map(([field, fieldValue]) => `${field}: ${fieldValue || "(empty)"}`);
 
   return [
@@ -157,9 +158,10 @@ export default {
       const phone = value(form, "phone", MAX_FIELD_LENGTH);
       const service = value(form, "service", MAX_FIELD_LENGTH);
       const message = value(form, "message", MAX_MESSAGE_LENGTH, true);
-      const honeypot = value(form, "website", MAX_FIELD_LENGTH);
+      const honeypot = value(form, HONEYPOT_FIELD, MAX_FIELD_LENGTH);
 
       if (honeypot) {
+        console.warn("Contact submission matched honeypot; email not sent.");
         return successResponse("Thanks!", env, asJson, cors);
       }
 
