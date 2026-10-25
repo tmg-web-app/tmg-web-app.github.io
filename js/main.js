@@ -189,4 +189,65 @@ document.addEventListener('DOMContentLoaded', () => {
       field.setCustomValidity('');
     });
   }
+
+  const contactForm = document.getElementById('contactForm');
+  const formStatus = document.getElementById('formStatus');
+
+  if (contactForm) {
+    const submitButton = contactForm.querySelector('button[type="submit"]');
+
+    contactForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (!contactForm.reportValidity()) {
+        return;
+      }
+
+      if (submitButton) {
+        submitButton.disabled = true;
+      }
+
+      if (formStatus) {
+        formStatus.textContent = 'Sending your message...';
+        formStatus.classList.remove('is-error', 'is-success');
+      }
+
+      try {
+        const response = await fetch(contactForm.action, {
+          method: 'POST',
+          body: new FormData(contactForm),
+          headers: {
+            Accept: 'application/json',
+            'X-Requested-With': 'fetch'
+          }
+        });
+
+        const payload = await response.json();
+
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.message || 'Unable to send your message right now.');
+        }
+
+        if (formStatus) {
+          formStatus.textContent = payload.message || 'Thanks! Redirecting...';
+          formStatus.classList.add('is-success');
+        }
+
+        window.setTimeout(() => {
+          window.location.assign(payload.redirect || 'https://www.mediagroup.dev/thanks.html');
+        }, 450);
+      } catch (error) {
+        if (formStatus) {
+          formStatus.textContent = error instanceof Error
+            ? error.message
+            : 'Unable to send your message right now. Please try again later.';
+          formStatus.classList.add('is-error');
+        }
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
+      }
+    });
+  }
 });
