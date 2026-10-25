@@ -6,7 +6,7 @@
   <meta name="Keywords" content="Web Design, Software Programming, Video Editing, iOS Apps, Android Apps, Cheap Software, Tri-State Media, Kentucky Web Developer">
   <meta name="description" content="Tri-State Media Group - Website Development, Desktop Software, Multi-Media Services">  
   <title>Contact | Tri-State Media Group</title>
-  <link rel="stylesheet" href="css/styles.css?v=20261025">
+  <link rel="stylesheet" href="css/styles.css?v=20261025i">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -37,51 +37,103 @@
   <main class="contact-page">
     <section class="contact-section" aria-labelledby="contact-title">
       <div class="container contact-grid">
-        <div class="contact-intro">
-          <div class="badge">Let’s build something useful</div>
-          <h1 id="contact-title" class="hero-title">Start your next <span class="gradient-text">digital project</span></h1>
-          <p class="hero-subtitle">Tell us what you are working on, and we will follow up with a clear next step.</p>
-          <div class="contact-details">
-            <p><strong>Web development</strong><br>Responsive sites and digital experiences.</p>
-            <p><strong>Application programming</strong><br>Scalable software and integrations.</p>
-            <p><strong>Multimedia services</strong><br>Video, motion, and branded content.</p>
+        <!-- Left Column: Direct Copy & Value Props -->
+        <div class="contact-info">
+          <div class="badge">One Shop. Every Skill.</div>
+          <h1 id="contact-title" class="hero-title">Let’s Build Something That <span class="gradient-text">Pays for Itself.</span></h1>
+          <p class="hero-subtitle">
+            Whether you need a <strong>$99</strong> starter site, a WordPress rescue, thumb-stopping media, or custom software built around your exact workflow—you get big-agency polish with corner-shop honesty. No pushy sales pitches, and no surprise invoices.
+          </p>
+
+          <div class="contact-perks">
+            <div class="perk-card">
+              <div class="perk-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+              </div>
+              <div>
+                <h3>Transparent Pricing</h3>
+                <p>Starter packages from <strong>$99</strong>—know what you're paying before we write a single line of code.</p>
+              </div>
+            </div>
+
+            <div class="perk-card">
+              <div class="perk-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>
+                </svg>
+              </div>
+              <div>
+                <h3>All-In-One Firepower</h3>
+                <p>Web development, custom desktop &amp; web apps, and multimedia production under one roof.</p>
+              </div>
+            </div>
+
+            <div class="perk-card">
+              <div class="perk-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <div>
+                <h3>Real Talk</h3>
+                <p>Tell us what's broken, what you want to launch, or what's slowing your team down, and we'll give you a straight answer.</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        <form class="contact-form" action="https://forms.mediagroup.dev/contact" method="post">
-          <div class="form-field">
-            <label for="name">Name <span aria-hidden="true">*</span></label>
-            <input id="name" name="name" type="text" autocomplete="name" required data-required-message="Name is required.">
-          </div>
+        <!-- Right Column: Interactive Project Form -->
+        <div class="contact-form-card">
+          <h2>Tell Us What You're Working On</h2>
+          <p class="form-subtext">Fill out the quick details below and we’ll get right back to you with a game plan.</p>
 
-          <div class="form-field">
-            <label for="email">Email <span aria-hidden="true">*</span></label>
-            <input id="email" name="email" type="email" autocomplete="email" required data-required-message="Email is required.">
-          </div>
+          <form id="contactForm" class="contact-form" action="https://forms.mediagroup.dev/contact" method="post">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="name">Your Name *</label>
+                <input type="text" id="name" name="name" placeholder="Jane Doe" autocomplete="name" required data-required-message="Name is required.">
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" placeholder="jane@yourbusiness.com" autocomplete="email" required data-required-message="Email is required.">
+              </div>
+            </div>
 
-          <div class="form-field">
-            <label for="service">What can we help with?</label>
-            <select id="service" name="service">
-              <option value="">Select a service</option>
-              <option value="website-development">I need a website...</option>
-              <option value="application-programming">I have this idea for an App.</option>
-              <option value="multimedia-services">Multimedia Services...like audio or video</option>
-              <option value="other">Something Ese</option>
-            </select>
-          </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="phone">Phone Number <span class="optional">(Optional)</span></label>
+                <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" autocomplete="tel">
+              </div>
+              <div class="form-group">
+                <label for="service">What Do You Need? *</label>
+                <select id="service" name="service" required data-required-message="Please choose a service.">
+                  <option value="" disabled selected>Select an option...</option>
+                  <option value="99-starter">$99 Starter Package / Promo</option>
+                  <option value="web-dev">Website Development / Redesign</option>
+                  <option value="wp-rescue">WordPress Rescue &amp; Maintenance</option>
+                  <option value="custom-software">Custom Software / Application Programming</option>
+                  <option value="multimedia">Video &amp; Multimedia Production</option>
+                  <option value="other">Something Else / All of the Above</option>
+                </select>
+              </div>
+            </div>
 
-          <div class="form-field">
-            <label for="message">Project details <span aria-hidden="true">*</span></label>
-            <textarea id="message" name="message" rows="6" required data-required-message="Project details are required."></textarea>
-          </div>
+            <div class="form-group">
+              <label for="message">Project Details *</label>
+              <textarea id="message" name="message" rows="5" placeholder="Tell us a little about your business, what you need built or fixed, and your ideal timeline..." required data-required-message="Project details are required."></textarea>
+            </div>
 
-          <div class="form-field contact-form-trap" aria-hidden="true">
-            <label for="website">Website</label>
-            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
-          </div>
+            <div class="form-group contact-form-trap" aria-hidden="true">
+              <label for="website">Website</label>
+              <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+            </div>
 
-          <button class="btn btn-primary form-submit" type="submit">Send an eMail</button>
-        </form>
+            <button type="submit" class="btn btn-primary btn-block">Start My Project &rarr;</button>
+            <p class="form-note">No spam. No high-pressure sales calls. Just straight answers.</p>
+          </form>
+        </div>
       </div>
     </section>
   </main>
@@ -106,6 +158,6 @@
     </div>
   </footer>
 
-  <script src="js/main.js?v=20260920" defer></script>
+  <script src="js/main.js?v=20261025i" defer></script>
 </body>
 </html>
