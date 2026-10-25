@@ -21,7 +21,7 @@ This Cloudflare Worker receives the contact form submission, sends it through Cl
    wrangler deploy
    ```
 
-   Set `CONTACT_SENDER` to the verified sender address, `CONTACT_RECIPIENT` to the inbox that should receive requests, and `THANK_YOU_URL` to `https://tmg-web-app.github.io/thanks.html`.
+   Set `CONTACT_SENDER` to the verified sender address, `CONTACT_RECIPIENT` to the inbox that should receive requests, and `THANK_YOU_URL` to `https://www.mediagroup.dev/thanks.html`.
 
 4. Replace `YOUR_ACCOUNT_SUBDOMAIN` in `../contact.html` with the Worker hostname shown by `wrangler deploy`.
 

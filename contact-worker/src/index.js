@@ -17,7 +17,7 @@ function value(form, field, maximumLength, allowNewlines = false) {
 }
 
 function redirectTarget(env) {
-  return env.THANK_YOU_URL || "https://tmg-web-app.github.io/thanks.html";
+  return env.THANK_YOU_URL || "https://www.mediagroup.dev/thanks.html";
 }
 
 function normalizedFormSnapshot(form) {
