@@ -114,26 +114,22 @@
   </header>
 
   <!-- Lighting Studio Floating Draggable Panel (Separated to Left Side) -->
-  <aside id="lights-panel" class="absolute top-20 left-4 z-20 w-80 max-w-[calc(100vw-2rem)] glass-panel rounded-2xl p-4 shadow-2xl border border-amber-500/20 text-xs select-none max-h-[75vh] flex flex-col pointer-events-auto transition-[padding,border-radius] duration-200">
-    <div id="lights-drag-handle" class="panel-header-drag flex items-center justify-between pb-2.5 mb-2.5 border-b border-white/10" title="Drag to move &bull; Double-click to collapse/expand">
-      <div class="flex items-center gap-2 font-semibold text-gray-200">
-        <i class="fa-solid fa-grip-vertical text-amber-500/50 mr-0.5"></i>
-        <i class="fa-solid fa-lightbulb text-amber-400"></i>
-        <span>Lighting Studio</span>
+  <aside id="lights-panel" class="absolute top-20 left-4 z-20 w-[15.5rem] max-w-[calc(100vw-2rem)] glass-panel rounded-2xl p-4 shadow-2xl border border-amber-500/20 text-xs select-none max-h-[75vh] flex flex-col pointer-events-auto transition-[padding,border-radius] duration-200">
+    <div id="lights-drag-handle" class="panel-header-drag flex items-center justify-between gap-1 pb-2.5 mb-2.5 border-b border-white/10 min-w-0" title="Drag to move &bull; Double-click to collapse/expand">
+      <div class="flex items-center gap-2 font-semibold text-gray-200 min-w-0 shrink">
+        <i class="fa-solid fa-grip-vertical text-amber-500/50 mr-0.5 shrink-0"></i>
+        <i class="fa-solid fa-lightbulb text-amber-400 shrink-0"></i>
+        <span class="truncate">Lighting</span>
       </div>
-      <div class="flex items-center gap-1.5 pointer-events-auto">
+      <div class="flex items-center gap-1 pointer-events-auto shrink-0">
         <!-- Undo & Redo History Action Buttons -->
-        <button id="btn-undo-light" class="p-1 px-1.5 rounded-md text-gray-400 hover:text-amber-300 hover:bg-white/10 transition-colors disabled:opacity-30 disabled:pointer-events-none" title="Undo Light Change (Ctrl+Z)" disabled>
+        <button id="btn-undo-light" class="p-1 px-1 rounded-md text-gray-400 hover:text-amber-300 hover:bg-white/10 transition-colors disabled:opacity-30 disabled:pointer-events-none" title="Undo Light Change (Ctrl+Z)" disabled>
           <i class="fa-solid fa-rotate-left text-xs"></i>
         </button>
-        <button id="btn-redo-light" class="p-1 px-1.5 rounded-md text-gray-400 hover:text-amber-300 hover:bg-white/10 transition-colors disabled:opacity-30 disabled:pointer-events-none" title="Redo Light Change (Ctrl+Y / Ctrl+Shift+Z)" disabled>
+        <button id="btn-redo-light" class="p-1 px-1 rounded-md text-gray-400 hover:text-amber-300 hover:bg-white/10 transition-colors disabled:opacity-30 disabled:pointer-events-none" title="Redo Light Change (Ctrl+Y / Ctrl+Shift+Z)" disabled>
           <i class="fa-solid fa-rotate-right text-xs"></i>
         </button>
-        <div class="h-3 w-[1px] bg-white/10 mx-0.5"></div>
-        <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-gray-300 hover:text-white" title="Toggle 3D visual helpers">
-          <input id="chk-light-helpers" type="checkbox" checked class="rounded border-gray-600 accent-amber-500 cursor-pointer">
-          <span>Helpers</span>
-        </label>
+        <div class="h-3 w-[1px] bg-white/10"></div>
         <button id="btn-collapse-lights" class="p-1 rounded-md text-gray-400 hover:text-amber-400 hover:bg-white/10 transition-transform duration-200" title="Collapse / Expand Panel">
           <i class="fa-solid fa-caret-down collapse-triangle text-sm transition-transform duration-200"></i>
         </button>
@@ -167,8 +163,12 @@
       </div>
 
       <!-- Active Custom Lights List -->
-      <div class="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 flex items-center justify-between shrink-0">
+      <div class="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 flex items-center justify-between gap-2 shrink-0">
         <span>Active Scene Lights (<span id="light-count">0</span>)</span>
+        <label class="flex items-center gap-1.5 cursor-pointer text-[10px] normal-case tracking-normal text-gray-300 hover:text-white whitespace-nowrap shrink-0" title="Toggle 3D visual helpers">
+          <input id="chk-light-helpers" type="checkbox" checked class="rounded border-gray-600 accent-amber-500 cursor-pointer">
+          <span>Helpers</span>
+        </label>
       </div>
       
       <div id="lights-list" class="space-y-2.5 overflow-y-auto custom-scroll pr-1 flex-1">
@@ -181,12 +181,12 @@
   </aside>
 
   <!-- Transform Sliders Floating Draggable Panel (Positioned on Right Side) -->
-  <aside id="transform-panel" class="absolute top-20 right-4 z-20 w-80 max-w-[calc(100vw-2rem)] glass-panel rounded-2xl p-4 shadow-2xl border border-white/10 text-xs select-none pointer-events-auto transition-[padding,border-radius] duration-200">
+  <aside id="transform-panel" class="absolute top-20 right-4 z-20 w-[13.5rem] max-w-[calc(100vw-2rem)] glass-panel rounded-2xl p-4 shadow-2xl border border-white/10 text-xs select-none pointer-events-auto transition-[padding,border-radius] duration-200">
     <div id="transform-drag-handle" class="panel-header-drag flex items-center justify-between pb-2.5 mb-3 border-b border-white/10" title="Drag to move &bull; Double-click to collapse/expand">
       <div class="flex items-center gap-2 font-semibold text-gray-200">
         <i class="fa-solid fa-grip-vertical text-emerald-500/50 mr-0.5"></i>
         <i class="fa-solid fa-arrows-up-down-left-right text-emerald-400"></i>
-        <span>Model Transforms</span>
+        <span>Transform</span>
       </div>
       <div class="flex items-center gap-1.5 pointer-events-auto">
         <button id="btn-reset-transforms" class="px-2 py-1 text-[11px] rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white transition-colors flex items-center gap-1.5" title="Reset all transforms to default">
