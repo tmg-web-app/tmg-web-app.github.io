@@ -1747,13 +1747,10 @@
       renderer.render(scene, camera);
     }
 
-    // Reflect the single-source-of-truth APP_VERSION into the UI chips and log it.
+    // Reflect the single-source-of-truth APP_VERSION into the footer label and log it.
     function applyAppVersion() {
-      const label = 'v' + APP_VERSION;
-      ['app-version-chip', 'app-version-footer'].forEach(function (id) {
-        const el = document.getElementById(id);
-        if (el) el.textContent = label;
-      });
+      const el = document.getElementById('app-version-footer');
+      if (el) el.textContent = 'v' + APP_VERSION;
       console.log('GLB Model Viewer v' + APP_VERSION);
     }
 
