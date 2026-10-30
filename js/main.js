@@ -153,6 +153,30 @@ document.addEventListener('DOMContentLoaded', () => {
       requestAnimationFrame(watch);
     };
     requestAnimationFrame(watch);
+
+    // Replay from the very beginning on click / tap / keyboard.
+    // Both copies are reset so the cross-fade state machine stays coherent:
+    // after a swap the visible copy is the clone, but querySelector still
+    // returns the original, which would otherwise restart invisibly.
+    const replayButton = document.getElementById('heroVideoReplay');
+    if (replayButton) {
+      const restartHeroVideo = () => {
+        for (const video of [heroVideo, standby]) {
+          video.pause();
+          video.currentTime = 0;
+          video.classList.add('is-standby');
+        }
+        heroVideo.classList.remove('is-standby');
+        active = heroVideo;
+        idle = standby;
+        primeStandby(standby);
+        const played = heroVideo.play();
+        if (played && typeof played.catch === 'function') {
+          played.catch(() => {});
+        }
+      };
+      replayButton.addEventListener('click', restartHeroVideo);
+    }
   }
   
   for (const link of scrollLinks) {
