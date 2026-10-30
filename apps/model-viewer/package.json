@@ -1,0 +1,13 @@
+{
+  "name": "tmg-model-viewer",
+  "private": true,
+  "version": "2.8.0",
+  "description": "Tri-State Media Group GLB model viewer (static, GitHub Pages).",
+  "scripts": {
+    "build:css": "tailwindcss -i tailwind.input.css -o tailwind.build.css --minify",
+    "watch:css": "tailwindcss -i tailwind.input.css -o tailwind.build.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

@@ -1,6 +1,6 @@
 ﻿    // Model viewer version.
     // X.Y.Z build pattern: X = major release, Y = minor build, Z = patch for release build.
-    const APP_VERSION = '2.7.13';
+    const APP_VERSION = '2.8.0';
 
     // Global Three.js State Variables
     let scene, camera, renderer, controls;
