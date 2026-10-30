@@ -1,4 +1,8 @@
-﻿    // Global Three.js State Variables
+﻿    // Model viewer version.
+    // X.Y.Z build pattern: X = major release, Y = minor build, Z = patch for release build.
+    const APP_VERSION = '2.7.13';
+
+    // Global Three.js State Variables
     let scene, camera, renderer, controls;
     let modelPivotGroup = null; // Container group to allow clean user offset/rotation/scale transforms
     let currentModel = null;
@@ -1743,8 +1747,18 @@
       renderer.render(scene, camera);
     }
 
-    // Start on Window Load
+    // Reflect the single-source-of-truth APP_VERSION into the UI chips and log it.
+    function applyAppVersion() {
+      const label = 'v' + APP_VERSION;
+      ['app-version-chip', 'app-version-footer'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = label;
+      });
+      console.log('GLB Model Viewer v' + APP_VERSION);
+    }
+
     window.onload = function () {
+      applyAppVersion();
       renderFeaturedModelsUI();
       renderSampleModelsUI();
       initScene();
