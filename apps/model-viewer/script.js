@@ -447,6 +447,41 @@
       }
     }
 
+    // ---- Auto-rotate after load ----
+    // Begins slowly spinning the model 2s after it finishes loading.
+    let autoRotateTimer = null;
+    // Once the user orbits or toggles rotation themselves we stop auto-engaging,
+    // so we never yank control back from them (Option 1).
+    let userTookControl = false;
+
+    function setAutoRotate(on) {
+      autoRotate = on;
+      if (controls) {
+        controls.autoRotate = on;
+        controls.autoRotateSpeed = 2.0;
+      }
+      if (btnAutoRotate) {
+        btnAutoRotate.classList.toggle('text-emerald-400', on);
+        btnAutoRotate.classList.toggle('bg-white/10', on);
+      }
+    }
+
+    function cancelScheduledAutoRotate() {
+      if (autoRotateTimer) {
+        clearTimeout(autoRotateTimer);
+        autoRotateTimer = null;
+      }
+    }
+
+    function scheduleAutoRotate(delayMs = 2000) {
+      cancelScheduledAutoRotate();
+      if (userTookControl) return;
+      autoRotateTimer = setTimeout(() => {
+        autoRotateTimer = null;
+        setAutoRotate(true);
+      }, delayMs);
+    }
+
     // Toast Notification System
     function showToast(message, type = 'error') {
       const toast = document.getElementById('toast');
@@ -507,6 +542,20 @@
       controls.minDistance = 0.5;
       controls.maxDistance = 150;
       controls.maxPolarAngle = Math.PI / 2 + 0.1; // allow slight under-view
+
+      // Touching the canvas at all hands control to the user: stop any
+      // scheduled auto-rotate and turn off auto-rotation immediately.
+      const canvasEl = renderer.domElement;
+      const onUserTouchCanvas = () => {
+        userTookControl = true;
+        cancelScheduledAutoRotate();
+        if (autoRotate) setAutoRotate(false);
+      };
+      // 'pointerdown' covers mouse, touch and pen; the extras are belt-and-braces
+      // for touch devices and wheel/scroll interaction.
+      canvasEl.addEventListener('pointerdown', onUserTouchCanvas);
+      canvasEl.addEventListener('touchstart', onUserTouchCanvas, { passive: true });
+      canvasEl.addEventListener('wheel', onUserTouchCanvas, { passive: true });
 
       // Lighting Setup
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
@@ -627,6 +676,9 @@
           activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Loaded';
           showToast(`"${label}" loaded successfully!`, 'success');
 
+          // Begin rotating 2s after the model has fully rendered
+          scheduleAutoRotate(2000);
+
           setTimeout(() => {
             setLoaderMinimized(true);
           }, 400);
@@ -646,6 +698,7 @@
           if (loadCancelled) return;
           console.warn('Model load error:', error);
           hideLoadingOverlay();
+          cancelScheduledAutoRotate();
           activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Error';
           activeFilename.innerHTML = `Failed: <span class="text-red-300 font-medium">${escapeHtml(label)}</span>`;
           showToast(`Failed to load "${label}". Please check the file and try again.`, 'error');
@@ -664,6 +717,7 @@
       }
       activeLoadRequest = null;
       hideLoadingOverlay();
+      cancelScheduledAutoRotate();
       activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Cancelled';
       showToast('Load cancelled.', 'info');
     }
@@ -936,6 +990,9 @@
               activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Loaded';
               showToast(`"${fileName}" loaded successfully!`, 'success');
 
+              // Begin rotating 2s after the model has fully rendered
+              scheduleAutoRotate(2000);
+
               // Automatically minimize the model loader panel after successful model loading
               setTimeout(() => {
                 setLoaderMinimized(true);
@@ -943,6 +1000,7 @@
             },
             function(error) {
               console.warn('GLTF Parse Notice:', error);
+              cancelScheduledAutoRotate();
               activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Unsupported';
               showToast('Failed to load model. Please provide a valid .glb file.', 'error');
               fileInput.value = '';
@@ -950,6 +1008,7 @@
           );
         } catch (err) {
           console.error('Loader Runtime Exception:', err);
+          cancelScheduledAutoRotate();
           activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Error';
           showToast('Error parsing .glb file. Please provide a valid .glb model.', 'error');
           fileInput.value = '';
@@ -1312,11 +1371,9 @@
 
     // Auto-Rotate Toggle
     btnAutoRotate.addEventListener('click', () => {
-      autoRotate = !autoRotate;
-      controls.autoRotate = autoRotate;
-      controls.autoRotateSpeed = 2.0;
-      btnAutoRotate.classList.toggle('text-emerald-400', autoRotate);
-      btnAutoRotate.classList.toggle('bg-white/10', autoRotate);
+      userTookControl = true;
+      cancelScheduledAutoRotate();
+      setAutoRotate(!autoRotate);
     });
 
     // Grid Visibility Toggle
