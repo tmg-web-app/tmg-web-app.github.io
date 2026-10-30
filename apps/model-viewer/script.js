@@ -12,9 +12,8 @@
     // DOM Elements
     const container = document.getElementById('canvas-container');
     const fileInput = document.getElementById('glb-file-input');
-    const btnDefault = document.getElementById('btn-load-default');
-    const btnCrown = document.getElementById('btn-load-crown');
     const btnDownloadGlb = document.getElementById('btn-download-glb');
+    const sampleModelsList = document.getElementById('sample-models-list');
     const btnHeaderExport = document.getElementById('btn-header-export');
     const exportBtnLabel = document.getElementById('export-btn-label');
     const btnWireframe = document.getElementById('btn-wireframe');
@@ -53,6 +52,63 @@
     const loaderPanelActionText = document.getElementById('loader-panel-action-text');
     const clickToExpandHint = document.getElementById('click-to-expand-hint');
     const dropOverlay = document.getElementById('drop-overlay');
+
+    // Sample models showcased in the loader card.
+    // Add a new entry here to expose another bundled .glb as a one-click sample.
+    const SAMPLE_MODELS = [
+      { label: 'Frog (Smooth)',         file: 'assets/frog-nice-smooth.glb',  icon: 'fa-frog',        accent: 'emerald', desc: 'Low-poly frog, standard .glb', bytes: 999024 },
+      { label: 'Frog (Female)',         file: 'assets/frog-female.glb',       icon: 'fa-frog',        accent: 'sky',     desc: 'Female frog, ~25MB, WebP textures', bytes: 25712640 },
+      { label: 'Frog (Female, Draco)',  file: 'assets/frog-female-draco.glb', icon: 'fa-bolt',        accent: 'amber',   desc: 'Same frog, Draco-compressed — just 3.4MB', note: 'Draco-compressed', bytes: 3549924 }
+    ];
+
+    // Seasonal "limited time" featured models. Shown only within their date window,
+    // so the Halloween pumpkin appears in late October and auto-hides afterwards.
+    // Dates are local-time; adjust the month (0-indexed) / day as needed.
+    const FEATURED_MODELS = [
+      {
+        label: 'Halloween Pumpkin',
+        file: 'assets/pumpkin-1.glb',
+        icon: 'fa-ghost',
+        // Oct 1 – Nov 1 (month 9 = October, 10 = November)
+        start: { month: 9, day: 1 },
+        end:   { month: 10, day: 1 },
+        badge: 'Limited Time',
+        desc: 'Jack-o\'-lantern pumpkin, 23MB',
+        bytes: 24215728
+      }
+    ];
+
+    // Return featured models whose window includes the given date (defaults to now)
+    function getActiveFeaturedModels(now = new Date()) {
+      const m = now.getMonth();
+      const d = now.getDate();
+      return FEATURED_MODELS.filter(f => {
+        const afterStart = (m > f.start.month) || (m === f.start.month && d >= f.start.day);
+        const beforeEnd = (m < f.end.month) || (m === f.end.month && d < f.end.day);
+        return afterStart && beforeEnd;
+      });
+    }
+    const DEFAULT_SAMPLE = SAMPLE_MODELS[0];
+
+    // Shared DRACOLoader so Draco-compressed .glb files decode correctly.
+    // The decoder binary is self-hosted in ./draco/ to keep the app CDN-independent.
+    let dracoLoader = null;
+    function getDracoLoader() {
+      if (!dracoLoader && THREE.DRACOLoader) {
+        dracoLoader = new THREE.DRACOLoader();
+        dracoLoader.setDecoderPath('draco/');
+        dracoLoader.setDecoderConfig({ type: 'js' });
+      }
+      return dracoLoader;
+    }
+
+    // Build a GLTFLoader with Draco support attached
+    function createGltfLoader() {
+      const loader = new THREE.GLTFLoader();
+      const draco = getDracoLoader();
+      if (draco) loader.setDRACOLoader(draco);
+      return loader;
+    }
 
     let isLoaderMinimized = false;
 
@@ -323,6 +379,74 @@
     const statVertices = document.getElementById('stat-vertices');
     const statTriangles = document.getElementById('stat-triangles');
 
+    // ---- Fullscreen loading overlay ----
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingRing = document.getElementById('loading-ring');
+    const loadingPercent = document.getElementById('loading-percent');
+    const loadingName = document.getElementById('loading-name');
+    const loadingBytes = document.getElementById('loading-bytes');
+    const loadingHint = document.getElementById('loading-hint');
+    const btnCancelLoad = document.getElementById('btn-cancel-load');
+
+    // Files at or above this size show the "large file" hint (bytes)
+    const LARGE_FILE_BYTES = 10 * 1024 * 1024;
+    // The in-flight FileLoader request, so we can abort it on cancel
+    let activeLoadRequest = null;
+    // Set true when the user cancels, so late callbacks don't re-show the overlay
+    let loadCancelled = false;
+    // Expected total size for the in-flight load. Used when the server does not
+    // send Content-Length and the XHR reports lengthComputable=false / total=0.
+    let loadExpectedTotal = 0;
+
+    function formatMB(bytes) {
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function showLoadingOverlay(label, totalBytes) {
+      if (!loadingOverlay) return;
+      loadCancelled = false;
+      loadExpectedTotal = totalBytes || 0;
+      if (loadingName) loadingName.textContent = label;
+      if (loadingPercent) loadingPercent.textContent = '0%';
+      if (loadingBytes) loadingBytes.textContent = totalBytes ? `0.0 MB / ${formatMB(totalBytes)}` : 'Loading…';
+      if (loadingHint) loadingHint.classList.toggle('hidden', !(totalBytes >= LARGE_FILE_BYTES));
+      updateLoadingProgress(0, totalBytes);
+      loadingOverlay.classList.remove('hidden');
+      loadingOverlay.classList.add('flex');
+      // Force reflow so the opacity transition actually runs
+      void loadingOverlay.offsetWidth;
+      loadingOverlay.classList.remove('opacity-0');
+    }
+
+    function hideLoadingOverlay() {
+      if (!loadingOverlay) return;
+      loadingOverlay.classList.add('opacity-0');
+      loadingOverlay.classList.remove('flex');
+      // Wait for the fade, then fully hide
+      setTimeout(() => {
+        if (loadingOverlay.classList.contains('opacity-0')) {
+          loadingOverlay.classList.add('hidden');
+        }
+      }, 220);
+    }
+
+    function updateLoadingProgress(loaded, total) {
+      let pct = 0;
+      if (total && total > 0) {
+        pct = Math.min(100, Math.round((loaded / total) * 100));
+      } else if (loaded === total && total) {
+        pct = 100;
+      }
+      if (loadingPercent) loadingPercent.textContent = pct + '%';
+      if (loadingRing) {
+        // r=15.9155 => circumference ~= 100, so dashoffset maps directly to percent
+        loadingRing.setAttribute('stroke-dashoffset', String(100 - pct));
+      }
+      if (loadingBytes && total && total > 0) {
+        loadingBytes.textContent = `${formatMB(loaded)} / ${formatMB(total)}`;
+      }
+    }
+
     // Toast Notification System
     function showToast(message, type = 'error') {
       const toast = document.getElementById('toast');
@@ -422,7 +546,7 @@
       window.addEventListener('resize', onWindowResize, false);
 
       // Initial Default Model
-      loadDefaultModel();
+      loadModelFromUrl(DEFAULT_SAMPLE.label, DEFAULT_SAMPLE.file, { file: DEFAULT_SAMPLE.file, bytes: DEFAULT_SAMPLE.bytes });
     }
 
     function createFloorAndGrid() {
@@ -441,212 +565,178 @@
       scene.add(ground);
     }
 
-    // Procedural Default Stylized 3D Model
-    // Built directly with Three.js primitives so it starts instantly without Draco or CORS dependencies
-    function loadDefaultModel() {
-      if (currentModel) {
-        modelPivotGroup.remove(currentModel);
+    // Load a .glb model from a URL (bundled sample or remote) and display it.
+    // Handles Draco-compressed and WebP-textured models via the shared loaders.
+    function loadModelFromUrl(label, url, opts = {}) {
+      // Abort any load already in flight before starting a new one
+      if (activeLoadRequest && activeLoadRequest.abort) {
+        try { activeLoadRequest.abort(); } catch (e) { /* ignore */ }
       }
+      activeLoadRequest = null;
 
-      const rootGroup = new THREE.Group();
-      rootGroup.name = "DefaultStylizedTower";
+      // Note: the current model is intentionally kept on screen until the new
+      // one is ready, so the viewport never flashes empty during a big download.
 
-      // Palette
-      const stoneMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6, metalness: 0.1 });
-      const woodMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.7, metalness: 0.05 });
-      const goldMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.3, metalness: 0.85 });
-      const roofMat = new THREE.MeshStandardMaterial({ color: 0x059669, roughness: 0.4, metalness: 0.2 });
+      activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> Loading...';
+      activeFilename.innerHTML = `Loading: <span class="text-white">${escapeHtml(label)}</span>`;
 
-      // Base Platform
-      const base = new THREE.Mesh(new THREE.CylinderGeometry(2, 2.2, 0.4, 8), stoneMat);
-      base.castShadow = true;
-      base.receiveShadow = true;
-      base.position.y = 0.2;
-      rootGroup.add(base);
+      const loader = createGltfLoader();
+      const knownSize = opts.bytes || 0;
+      showLoadingOverlay(label, knownSize);
 
-      // Tower body
-      const tower = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.4, 2.8, 8), stoneMat);
-      tower.position.y = 1.8;
-      tower.castShadow = true;
-      tower.receiveShadow = true;
-      rootGroup.add(tower);
+      const request = loader.load(
+        url,
+        function(gltf) {
+          if (loadCancelled) return;
+          activeLoadRequest = null;
+          hideLoadingOverlay();
 
-      // Balcony rim
-      const rim = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.3, 0.3, 8), stoneMat);
-      rim.position.y = 3.35;
-      rim.castShadow = true;
-      rootGroup.add(rim);
+          if (currentModel) {
+            modelPivotGroup.remove(currentModel);
+          }
+          if (mixer) {
+            mixer.stopAllAction();
+            mixer = null;
+          }
 
-      // Conical Roof
-      const roof = new THREE.Mesh(new THREE.ConeGeometry(1.7, 1.8, 8), roofMat);
-      roof.position.y = 4.4;
-      roof.castShadow = true;
-      rootGroup.add(roof);
+          currentModel = gltf.scene || gltf.scenes[0];
+          modelPivotGroup.add(currentModel);
+          currentModelFilename = (opts.filename || label || 'model').replace(/\.glb$/i, '').trim() || 'model';
+          if (exportBtnLabel) exportBtnLabel.textContent = `Export ${currentModelFilename.slice(0, 14)} .GLB`;
 
-      // Golden Spire & Finial Sphere
-      const spire = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.1, 0.8, 8), goldMat);
-      spire.position.y = 5.5;
-      spire.castShadow = true;
-      rootGroup.add(spire);
+          // Setup GLTF Animations if present
+          if (gltf.animations && gltf.animations.length > 0) {
+            mixer = new THREE.AnimationMixer(currentModel);
+            gltf.animations.forEach((clip) => {
+              mixer.clipAction(clip).play();
+            });
+          }
 
-      const orb = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), goldMat);
-      orb.position.y = 5.9;
-      orb.castShadow = true;
-      rootGroup.add(orb);
+          // Apply existing wireframe preference
+          applyWireframe(isWireframe);
 
-      // Gate Arch (Wood Doorway)
-      const door = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 0.2), woodMat);
-      door.position.set(0, 1.0, 1.35);
-      door.castShadow = true;
-      rootGroup.add(door);
+          // Reset transform sliders and frame
+          resetTransformsUI();
+          frameModel(currentModel);
+          updateModelStats(currentModel);
 
-      // Orbiting decorative crystal
-      const gemGeo = new THREE.OctahedronGeometry(0.35);
-      const gemMat = new THREE.MeshStandardMaterial({
-        color: 0x38bdf8,
-        roughness: 0.15,
-        metalness: 0.9,
-        emissive: 0x0284c7,
-        emissiveIntensity: 0.3
-      });
-      const gem = new THREE.Mesh(gemGeo, gemMat);
-      gem.position.set(0, 3.4, 1.8);
-      gem.castShadow = true;
-      gem.userData.isFloatingCrystal = true;
-      rootGroup.add(gem);
+          // Detect Draco / WebP usage for the stats badge
+          updateFormatBadges(opts.file || url);
 
-      modelPivotGroup.add(rootGroup);
-      currentModel = rootGroup;
-      currentModelFilename = "stylized-tower";
-      if (exportBtnLabel) exportBtnLabel.textContent = "Export Spire .GLB";
+          activeFilename.innerHTML = `Active: <span class="text-emerald-300 font-medium">${escapeHtml(label)}</span>`;
+          activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Loaded';
+          showToast(`"${label}" loaded successfully!`, 'success');
 
-      resetTransformsUI();
-      frameModel(currentModel);
-      updateModelStats(currentModel);
-
-      activeFilename.innerHTML = 'Active: <span class="text-emerald-300 font-medium">Default Stylized Spire</span>';
-      activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Ready';
-    }
-
-    // Procedural Practice Model: Ornate Royal Golden Crown with Emeralds
-    function loadCrownModel() {
-      if (currentModel) {
-        modelPivotGroup.remove(currentModel);
-      }
-      if (mixer) {
-        mixer.stopAllAction();
-        mixer = null;
-      }
-
-      const crownGroup = new THREE.Group();
-      crownGroup.name = "RoyalGoldenCrown";
-
-      // PBR Materials
-      const goldMat = new THREE.MeshStandardMaterial({
-        color: 0xffb703,
-        roughness: 0.22,
-        metalness: 0.92,
-        name: "CrownGoldPBR"
-      });
-      const emeraldMat = new THREE.MeshStandardMaterial({
-        color: 0x059669,
-        roughness: 0.15,
-        metalness: 0.1,
-        emissive: 0x047857,
-        emissiveIntensity: 0.28,
-        name: "EmeraldJewelPBR"
-      });
-      const velvetMat = new THREE.MeshStandardMaterial({
-        color: 0x4c0519,
-        roughness: 0.85,
-        metalness: 0.05,
-        name: "VelvetCap"
-      });
-
-      // 1. Velvet Inner Cushion
-      const velvetCap = new THREE.Mesh(new THREE.SphereGeometry(1.28, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2), velvetMat);
-      velvetCap.position.y = 0.25;
-      velvetCap.scale.set(1, 0.72, 1);
-      velvetCap.castShadow = true;
-      crownGroup.add(velvetCap);
-
-      // 2. Main Circular Golden Circlet Band
-      const circlet = new THREE.Mesh(new THREE.CylinderGeometry(1.36, 1.4, 0.42, 32, 1, true), goldMat);
-      circlet.position.y = 0.21;
-      circlet.castShadow = true;
-      circlet.receiveShadow = true;
-      crownGroup.add(circlet);
-
-      // Upper & Lower Filigree Rim Rings
-      const lowerRim = new THREE.Mesh(new THREE.TorusGeometry(1.4, 0.05, 12, 32), goldMat);
-      lowerRim.rotation.x = Math.PI / 2;
-      lowerRim.position.y = 0.02;
-      crownGroup.add(lowerRim);
-
-      const upperRim = new THREE.Mesh(new THREE.TorusGeometry(1.36, 0.05, 12, 32), goldMat);
-      upperRim.rotation.x = Math.PI / 2;
-      upperRim.position.y = 0.42;
-      crownGroup.add(upperRim);
-
-      // 3. Arched Peaks & Golden Spheres Around the Crown
-      const peakCount = 8;
-      const radius = 1.36;
-
-      for (let i = 0; i < peakCount; i++) {
-        const angle = (i / peakCount) * Math.PI * 2;
-        const isFleurDeLis = (i === 0); // Centerpiece peak
-        const peakHeight = isFleurDeLis ? 1.4 : 0.85;
-        const peakWidth = isFleurDeLis ? 0.38 : 0.24;
-
-        const peakGroup = new THREE.Group();
-        peakGroup.position.set(Math.cos(angle) * radius, 0.42, Math.sin(angle) * radius);
-        peakGroup.rotation.y = -angle + Math.PI / 2;
-
-        // Peak Triangle / Spear
-        const spike = new THREE.Mesh(new THREE.ConeGeometry(peakWidth, peakHeight, 4), goldMat);
-        spike.position.y = peakHeight / 2;
-        spike.rotation.y = Math.PI / 4;
-        spike.castShadow = true;
-        peakGroup.add(spike);
-
-        // Golden Sphere on Top
-        const ball = new THREE.Mesh(new THREE.SphereGeometry(isFleurDeLis ? 0.12 : 0.08, 14, 14), goldMat);
-        ball.position.y = peakHeight + 0.04;
-        ball.castShadow = true;
-        peakGroup.add(ball);
-
-        // Inset Emerald Cabochon Gem on Alternate Peaks & Center
-        if (i % 2 === 0) {
-          const gem = new THREE.Mesh(new THREE.OctahedronGeometry(isFleurDeLis ? 0.16 : 0.11), emeraldMat);
-          gem.position.set(0, peakHeight * 0.45, 0.07);
-          gem.rotation.z = Math.PI / 4;
-          gem.castShadow = true;
-          peakGroup.add(gem);
+          setTimeout(() => {
+            setLoaderMinimized(true);
+          }, 400);
+        },
+        function(xhrEvent) {
+          // Download progress (three.js FileLoader passes the XHR progress event)
+          if (loadCancelled) return;
+          if (!xhrEvent) return;
+          // Some servers omit Content-Length, so the browser reports
+          // lengthComputable=false with total=0. Fall back to the known size.
+          let total = xhrEvent.lengthComputable ? xhrEvent.total : 0;
+          if (!total) total = loadExpectedTotal;
+          updateLoadingProgress(xhrEvent.loaded || 0, total);
+        },
+        function(error) {
+          activeLoadRequest = null;
+          if (loadCancelled) return;
+          console.warn('Model load error:', error);
+          hideLoadingOverlay();
+          activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Error';
+          activeFilename.innerHTML = `Failed: <span class="text-red-300 font-medium">${escapeHtml(label)}</span>`;
+          showToast(`Failed to load "${label}". Please check the file and try again.`, 'error');
         }
+      );
 
-        // Small circular pearls/rivets along base band
-        const rivet = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), goldMat);
-        rivet.position.set(Math.cos(angle + (Math.PI / peakCount)) * 1.41, 0.21, Math.sin(angle + (Math.PI / peakCount)) * 1.41);
-        crownGroup.add(rivet);
-
-        crownGroup.add(peakGroup);
-      }
-
-      modelPivotGroup.add(crownGroup);
-      currentModel = crownGroup;
-      currentModelFilename = "golden-crown";
-      if (exportBtnLabel) exportBtnLabel.textContent = "Export Crown .GLB";
-
-      applyWireframe(isWireframe);
-      resetTransformsUI();
-      frameModel(currentModel);
-      updateModelStats(currentModel);
-
-      activeFilename.innerHTML = 'Active: <span class="text-amber-300 font-medium">Practice Royal Crown</span>';
-      activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Ready';
+      activeLoadRequest = request;
     }
 
-    // Export currently active 3D model (custom uploaded, default, or crown) to an uncompressed standard .glb file
+    // Cancel an in-flight model load (download only; a parse already started
+    // will still finish, which is standard three.js behaviour).
+    function cancelActiveLoad() {
+      loadCancelled = true;
+      if (activeLoadRequest && activeLoadRequest.abort) {
+        try { activeLoadRequest.abort(); } catch (e) { /* ignore */ }
+      }
+      activeLoadRequest = null;
+      hideLoadingOverlay();
+      activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Cancelled';
+      showToast('Load cancelled.', 'info');
+    }
+
+    if (btnCancelLoad) {
+      btnCancelLoad.addEventListener('click', cancelActiveLoad);
+    }
+
+    // Render the sample model buttons in the loader card
+    function renderSampleModelsUI() {
+      if (!sampleModelsList) return;
+      sampleModelsList.innerHTML = '';
+
+      SAMPLE_MODELS.forEach((sample) => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 text-gray-300 hover:text-white text-xs font-medium transition-colors';
+        btn.title = sample.note ? `Load ${sample.label} (${sample.note})` : `Load ${sample.label}`;
+        btn.innerHTML = `
+          <span class="flex items-center gap-2 min-w-0">
+            <i class="fa-solid ${sample.icon} text-${sample.accent}-400 shrink-0"></i>
+            <span class="flex flex-col min-w-0 text-left">
+              <span class="truncate">${escapeHtml(sample.label)}</span>
+              ${sample.desc ? `<span class="text-[10px] font-normal text-gray-500 truncate">${escapeHtml(sample.desc)}</span>` : ''}
+            </span>
+          </span>
+          ${sample.note ? `<span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">${escapeHtml(sample.note)}</span>` : '<i class="fa-solid fa-arrow-right text-gray-500 text-[10px] shrink-0"></i>'}
+        `;
+        btn.addEventListener('click', () => {
+          loadModelFromUrl(sample.label, sample.file, { file: sample.file, bytes: sample.bytes });
+          fileInput.value = '';
+        });
+        sampleModelsList.appendChild(btn);
+      });
+    }
+
+    // Render the seasonal "limited time" featured model(s). Hides the whole block
+    // when no featured model is currently in season.
+    function renderFeaturedModelsUI() {
+      const listEl = document.getElementById('featured-models-list');
+      const wrapEl = document.getElementById('featured-models-wrap');
+      if (!listEl || !wrapEl) return;
+
+      const active = getActiveFeaturedModels();
+      if (active.length === 0) {
+        wrapEl.classList.add('hidden');
+        return;
+      }
+
+      wrapEl.classList.remove('hidden');
+      listEl.innerHTML = '';
+      active.forEach((item) => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-orange-500/15 hover:bg-orange-500/25 active:bg-orange-500/35 border border-orange-500/40 text-orange-200 hover:text-orange-100 text-xs font-medium transition-colors';
+        btn.title = `Load ${item.label} (${item.badge})`;
+        btn.innerHTML = `
+          <span class="flex items-center gap-2 min-w-0">
+            <i class="fa-solid ${item.icon} text-orange-400 shrink-0"></i>
+            <span class="flex flex-col min-w-0 text-left">
+              <span class="truncate">${escapeHtml(item.label)}</span>
+              ${item.desc ? `<span class="text-[10px] font-normal text-orange-200/70 truncate">${escapeHtml(item.desc)}</span>` : ''}
+            </span>
+          </span>
+          <span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/40 shrink-0">${escapeHtml(item.badge)}</span>
+        `;
+        btn.addEventListener('click', () => {
+          loadModelFromUrl(item.label, item.file, { file: item.file, bytes: item.bytes });
+          fileInput.value = '';
+        });
+        listEl.appendChild(btn);
+      });
+    }
+
+    // Export currently active 3D model (uploaded or sample) to an uncompressed standard .glb file
     function exportActiveModelGlb() {
       if (!currentModel) {
         showToast('No active 3D model to export.', 'warning');
@@ -799,23 +889,8 @@
       reader.onload = function(event) {
         const contents = event.target.result;
 
-        // Inspect GLB binary headers before passing to GLTFLoader
-        // This proactively detects KHR_draco_mesh_compression and prevents uncaught DracoLoader exceptions
-        try {
-          const isDraco = checkDracoCompression(contents);
-          if (isDraco) {
-            activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Draco Rejected';
-            activeFilename.innerHTML = `<span class="text-amber-300 font-medium">${escapeHtml(fileName)}</span> (Draco compressed)`;
-            showToast('Draco-compressed model detected! This viewer only supports standard uncompressed .glb files.', 'warning');
-            fileInput.value = '';
-            return;
-          }
-        } catch (e) {
-          console.warn('GLB header inspection failed, proceeding to standard loader:', e);
-        }
-
-        // Strict Requirement: GLTFLoader without any DRACOLoader attached
-        const loader = new THREE.GLTFLoader();
+        // GLTFLoader with Draco support attached for compressed models
+        const loader = createGltfLoader();
 
         try {
           loader.parse(
@@ -854,6 +929,9 @@
               frameModel(currentModel);
               updateModelStats(currentModel);
 
+              // Detect Draco / WebP usage for the stats badge
+              updateFormatBadges(contents);
+
               activeFilename.innerHTML = `Active: <span class="text-emerald-300 font-medium">${escapeHtml(fileName)}</span>`;
               activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Loaded';
               showToast(`"${fileName}" loaded successfully!`, 'success');
@@ -866,28 +944,14 @@
             function(error) {
               console.warn('GLTF Parse Notice:', error);
               activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Unsupported';
-              
-              const errorStr = (error && error.message) ? error.message : String(error);
-              if (errorStr.toLowerCase().includes('draco') || errorStr.toLowerCase().includes('khr_draco_mesh_compression')) {
-                showToast('Draco compression is not supported. Please select an uncompressed .glb model.', 'warning');
-              } else {
-                showToast('Failed to load model. Please provide a standard uncompressed .glb file.', 'error');
-              }
+              showToast('Failed to load model. Please provide a valid .glb file.', 'error');
               fileInput.value = '';
             }
           );
         } catch (err) {
-          // Catch synchronous DracoLoader missing error thrown inside GLTFLoader.parse
-          const errMessage = (err && err.message) ? err.message : String(err);
-          if (errMessage.toLowerCase().includes('draco')) {
-            activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Draco Rejected';
-            activeFilename.innerHTML = `<span class="text-amber-300 font-medium">${escapeHtml(fileName)}</span> (Draco compressed)`;
-            showToast('Draco-compressed model detected. Draco compression is not allowed.', 'warning');
-          } else {
-            console.error('Loader Runtime Exception:', err);
-            activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Error';
-            showToast('Error parsing .glb file. Only standard uncompressed .glb is supported.', 'error');
-          }
+          console.error('Loader Runtime Exception:', err);
+          activeStatus.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-red-400"></span> Error';
+          showToast('Error parsing .glb file. Please provide a valid .glb model.', 'error');
           fileInput.value = '';
         }
       };
@@ -940,11 +1004,44 @@
       }
     });
 
-    // Helper to scan GLB JSON chunk for KHR_draco_mesh_compression
-    function checkDracoCompression(arrayBuffer) {
+    // Inspect a GLB (ArrayBuffer, File path, or URL string) and reflect which
+    // extensions it uses (Draco compression / WebP textures) in the stats badge.
+    let formatBadgeContainer = null;
+    function updateFormatBadges(source) {
+      const badges = [];
+
+      if (source instanceof ArrayBuffer || (source && source.buffer instanceof ArrayBuffer)) {
+        const buf = source instanceof ArrayBuffer ? source : source.buffer;
+        try {
+          if (bufferUsesExtension(buf, 'KHR_draco_mesh_compression')) badges.push({ label: 'Draco', cls: 'bg-amber-500/15 text-amber-300 border-amber-500/30' });
+          if (bufferUsesExtension(buf, 'EXT_texture_webp')) badges.push({ label: 'WebP', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' });
+        } catch (e) { /* ignore malformed buffers */ }
+      } else {
+        // String path/URL: infer from the filename as a lightweight heuristic
+        const name = String(source || '').toLowerCase();
+        if (name.includes('draco')) badges.push({ label: 'Draco', cls: 'bg-amber-500/15 text-amber-300 border-amber-500/30' });
+        if (name.endsWith('.glb') || name.endsWith('.gltf')) badges.push({ label: 'WebP', cls: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' });
+      }
+
+      const statsCard = document.querySelector('#stat-meshes')?.closest('.glass-panel');
+      if (!statsCard) return;
+      let row = statsCard.querySelector('#format-badges');
+      if (!row) {
+        row = document.createElement('div');
+        row.id = 'format-badges';
+        row.className = 'pt-1.5 mt-1 border-t border-white/5 flex items-center gap-1.5 flex-wrap';
+        statsCard.appendChild(row);
+      }
+      row.innerHTML = badges.length
+        ? badges.map(b => `<span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border ${b.cls}">${b.label}</span>`).join('')
+        : '<span class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border bg-white/5 text-gray-400 border-white/10">Standard</span>';
+    }
+
+    // Helper to scan a GLB JSON chunk for a given glTF extension name
+    function bufferUsesExtension(arrayBuffer, extensionName) {
       if (!arrayBuffer || arrayBuffer.byteLength < 20) return false;
       const dataView = new DataView(arrayBuffer);
-      
+
       // Magic number check 'glTF' (0x46546C67)
       const magic = dataView.getUint32(0, true);
       if (magic !== 0x46546C67) return false;
@@ -959,7 +1056,7 @@
       const jsonBytes = new Uint8Array(arrayBuffer, 20, Math.min(jsonChunkLength, arrayBuffer.byteLength - 20));
       const jsonText = decoder.decode(jsonBytes);
 
-      return jsonText.includes('KHR_draco_mesh_compression');
+      return jsonText.includes(extensionName);
     }
 
     // Wireframe Toggle Logic
@@ -1384,29 +1481,6 @@
       }
     });
 
-    // Load Default Model Button
-    btnDefault.addEventListener('click', () => {
-      loadDefaultModel();
-      fileInput.value = '';
-      showToast('Loaded standard default model.', 'info');
-      // Automatically minimize the loader panel
-      setTimeout(() => {
-        setLoaderMinimized(true);
-      }, 400);
-    });
-
-    // Load Practice Crown Model Button
-    if (btnCrown) {
-      btnCrown.addEventListener('click', () => {
-        loadCrownModel();
-        fileInput.value = '';
-        showToast('Loaded practice Royal Golden Crown model.', 'info');
-        setTimeout(() => {
-          setLoaderMinimized(true);
-        }, 400);
-      });
-    }
-
     // Download/Export Any Active .glb Button
     if (btnDownloadGlb) {
       btnDownloadGlb.addEventListener('click', () => {
@@ -1614,6 +1688,8 @@
 
     // Start on Window Load
     window.onload = function () {
+      renderFeaturedModelsUI();
+      renderSampleModelsUI();
       initScene();
       animate();
     };

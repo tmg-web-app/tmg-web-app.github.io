@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Primary SEO -->
-  <title>3D GLB Model Viewer (No Draco) | Tri-State Media Group</title>
-  <meta name="description" content="Free online 3D GLB model viewer and inspector. Drag and drop standard uncompressed .glb files to view, light, transform, wireframe and re-export 3D models directly in your browser with WebGL. No Draco, no plugins, no upload.">
-  <meta name="keywords" content="3D model viewer, GLB viewer, GLB inspector, glTF viewer, WebGL 3D viewer, online 3D viewer, uncompressed GLB, no Draco, 3D model inspector, export GLB, Three.js viewer, browser 3D viewer, Tri-State Media Group">
+  <title>3D GLB Model Viewer (Draco + WebP) | Tri-State Media Group</title>
+  <meta name="description" content="Free online 3D GLB model viewer and inspector. Drag and drop .glb files — including Draco-compressed and WebP-textured models — to view, light, transform, wireframe and re-export 3D models directly in your browser with WebGL. No plugins, no upload.">
+  <meta name="keywords" content="3D model viewer, GLB viewer, GLB inspector, glTF viewer, WebGL 3D viewer, online 3D viewer, Draco GLB viewer, Draco compression, WebP textures, KHR_mesh_quantization, 3D model inspector, export GLB, Three.js viewer, browser 3D viewer, Tri-State Media Group">
   <meta name="author" content="Tri-State Media Group">
   <meta name="robots" content="index, follow">
   <meta name="theme-color" content="#0e131f">
@@ -16,16 +16,16 @@
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Tri-State Media Group">
-  <meta property="og:title" content="3D GLB Model Viewer (No Draco)">
-  <meta property="og:description" content="Drag and drop standard uncompressed .glb files to view, light, transform and re-export 3D models in your browser. WebGL powered, no plugins, nothing uploaded.">
+  <meta property="og:title" content="3D GLB Model Viewer (Draco + WebP)">
+  <meta property="og:description" content="Drag and drop .glb files — including Draco-compressed and WebP-textured models — to view, light, transform and re-export 3D models in your browser. WebGL powered, no plugins, nothing uploaded.">
   <meta property="og:url" content="https://www.mediagroup.dev/apps/model-viewer/">
   <meta property="og:image" content="https://www.mediagroup.dev/images/logo_icon_orange.png">
   <meta property="og:image:alt" content="Tri-State Media Group logo">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="3D GLB Model Viewer (No Draco)">
-  <meta name="twitter:description" content="Drag and drop standard uncompressed .glb files to view, light, transform and re-export 3D models in your browser. WebGL powered, no plugins, nothing uploaded.">
+  <meta name="twitter:title" content="3D GLB Model Viewer (Draco + WebP)">
+  <meta name="twitter:description" content="Drag and drop .glb files — including Draco-compressed and WebP-textured models — to view, light, transform and re-export 3D models in your browser. WebGL powered, no plugins, nothing uploaded.">
   <meta name="twitter:image" content="https://www.mediagroup.dev/images/logo_icon_orange.png">
   <meta name="twitter:image:alt" content="Tri-State Media Group logo">
 
@@ -44,6 +44,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <!-- DRACOLoader (self-hosted decoder) so Draco-compressed .glb models are supported -->
+  <script src="draco/DRACOLoader.js"></script>
   <!-- GLTFExporter for generating clean uncompressed practice .glb files -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/exporters/GLTFExporter.js"></script>
 
@@ -62,11 +64,44 @@
       </div>
       <div>
         <h3 class="text-lg font-semibold text-white">Drop .GLB Model Here</h3>
-        <p class="text-xs text-gray-300 mt-1">Standard uncompressed .glb only (max 64MB)</p>
+        <p class="text-xs text-gray-300 mt-1">Standard, Draco &amp; WebP .glb supported (max 64MB)</p>
       </div>
-      <div class="text-[11px] text-amber-300 font-medium px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30">
-        No Draco compression
+      <div class="text-[11px] text-emerald-300 font-medium px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+        <i class="fa-solid fa-bolt mr-1"></i>Draco &amp; WebP ready
       </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Loading Overlay with progress + cancel -->
+  <div id="loading-overlay" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md hidden items-center justify-center opacity-0 transition-opacity duration-200" role="dialog" aria-modal="true" aria-label="Loading 3D model">
+    <div class="p-6 rounded-2xl glass-panel border border-emerald-400/40 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm mx-4">
+      <!-- Progress ring -->
+      <div class="relative w-20 h-20 flex items-center justify-center">
+        <svg class="w-20 h-20 -rotate-90" viewBox="0 0 36 36" aria-hidden="true">
+          <circle cx="18" cy="18" r="15.9155" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="2.5" />
+          <circle id="loading-ring" cx="18" cy="18" r="15.9155" fill="none" stroke="rgb(52,211,153)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="100 100" stroke-dashoffset="100" class="transition-[stroke-dashoffset] duration-200 ease-out" />
+        </svg>
+        <span id="loading-percent" class="absolute text-sm font-semibold text-emerald-300 font-mono">0%</span>
+      </div>
+
+      <!-- Text / status -->
+      <div class="flex flex-col gap-1" role="status" aria-live="polite">
+        <h3 class="text-base font-semibold text-white truncate max-w-[18rem]">
+          Loading <span id="loading-name" class="text-emerald-300">model</span>&hellip;
+        </h3>
+        <p id="loading-bytes" class="text-[11px] text-gray-400 font-mono">0 MB / 0 MB</p>
+      </div>
+
+      <!-- Large file hint -->
+      <div id="loading-hint" class="hidden text-[11px] text-amber-300 font-medium px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30">
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i>Large file &mdash; this may take a moment
+      </div>
+
+      <!-- Cancel -->
+      <button id="btn-cancel-load" class="px-4 py-2 bg-white/5 hover:bg-red-500/20 active:bg-red-500/30 border border-white/10 hover:border-red-500/40 text-gray-300 hover:text-red-200 text-xs font-medium rounded-xl transition-colors flex items-center justify-center gap-2">
+        <i class="fa-solid fa-xmark"></i>
+        <span>Cancel</span>
+      </button>
     </div>
   </div>
 
@@ -79,7 +114,7 @@
       <div>
         <h1 class="text-sm font-semibold tracking-wide text-white flex items-center gap-2">
           GLB Model Viewer
-          <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">Standard GLB</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">Draco &middot; WebP</span>
         </h1>
         <p class="text-xs text-gray-400">WebGL 3D Inspector</p>
       </div>
@@ -331,11 +366,25 @@
 
       <!-- Minimizable Body Section -->
       <div id="loader-panel-body" class="panel-body-transition max-h-[500px]">
-        <!-- Draco Warning Notice Banner -->
-        <div class="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mb-3 text-amber-200">
-          <i class="fa-solid fa-triangle-exclamation text-amber-400 text-lg mt-0.5 shrink-0"></i>
-          <div class="text-xs leading-relaxed">
-            <span class="font-semibold text-amber-300">Notice:</span> Only uncompressed standard <span class="font-mono bg-black/30 px-1 py-0.5 rounded text-amber-200">.glb</span> files are supported (max file size: <span class="text-amber-100 font-semibold">64MB</span>). <span class="text-amber-100 font-semibold underline">Draco-compressed models are not supported</span> and will not load.
+        <!-- Seasonal Featured Model (limited time) -->
+        <div id="featured-models-wrap" class="mb-3 hidden">
+          <div class="text-[10px] font-semibold uppercase tracking-wider text-orange-300 mb-1.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-sparkles text-orange-400"></i>
+            <span>Featured &middot; Limited Time</span>
+          </div>
+          <div id="featured-models-list" class="grid grid-cols-1 gap-1.5">
+            <!-- Featured model buttons injected dynamically -->
+          </div>
+        </div>
+
+        <!-- Sample Models List -->
+        <div class="mb-3">
+          <div class="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5 flex items-center justify-between gap-2">
+            <span>Sample Models</span>
+            <span class="text-[10px] normal-case tracking-normal text-gray-500">Draco &amp; WebP supported</span>
+          </div>
+          <div id="sample-models-list" class="grid grid-cols-1 gap-1.5">
+            <!-- Sample model buttons injected dynamically -->
           </div>
         </div>
 
@@ -347,16 +396,6 @@
             <!-- Strict File Input for GLB only -->
             <input id="glb-file-input" type="file" accept=".glb,model/gltf-binary" class="hidden" />
           </label>
-          
-          <button id="btn-load-default" class="w-full sm:w-auto px-4 py-3 bg-white/5 hover:bg-white/10 active:bg-white/15 border border-white/10 text-gray-300 hover:text-white text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
-            <i class="fa-solid fa-rotate-left"></i>
-            <span>Default Spire</span>
-          </button>
-
-          <button id="btn-load-crown" class="w-full sm:w-auto px-4 py-3 bg-amber-500/15 hover:bg-amber-500/25 active:bg-amber-500/35 border border-amber-500/30 text-amber-300 hover:text-amber-200 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 whitespace-nowrap" title="Load the practice Golden Crown model">
-            <i class="fa-solid fa-crown text-amber-400"></i>
-            <span>Practice Crown</span>
-          </button>
 
           <!-- High-Visibility Export Button -->
           <button id="btn-download-glb" class="w-full sm:w-auto px-4 py-3 bg-gradient-to-r from-teal-500 via-emerald-500 to-green-600 hover:from-teal-400 hover:via-emerald-400 hover:to-green-500 active:from-teal-700 active:to-emerald-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-emerald-900/50 hover:shadow-emerald-500/30 border border-emerald-400/40 transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap hover:scale-[1.02] active:scale-[0.98]" title="Export and save currently active 3D model as standard .glb">
@@ -364,11 +403,23 @@
             <span id="export-btn-label">Export Current .GLB</span>
           </button>
         </div>
+
+        <!-- Create-more-models referral link -->
+        <div class="mt-3 flex items-center justify-center">
+          <a href="https://www.meshy.ai/?utm_source=meshy&amp;utm_medium=referral-program&amp;utm_content=3PIQHA&amp;share_type=invite-friends"
+             target="_blank" rel="noopener noreferrer"
+             class="text-[11px] text-cyan-300/90 hover:text-cyan-200 transition-colors flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30"
+             title="Generate your own 3D models with Meshy">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Need a model? Generate one with Meshy</span>
+            <span class="text-cyan-400/70" aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
       </div>
       
       <!-- Current Model Status Indicator (Always Visible) -->
       <div class="mt-2 px-1 flex items-center justify-between text-[11px] text-gray-400">
-        <span id="active-filename" class="truncate max-w-[320px] sm:max-w-md">Active: <span class="text-gray-200">Stylized Castle Gate (Procedural Default)</span></span>
+        <span id="active-filename" class="truncate max-w-[320px] sm:max-w-md">Active: <span class="text-gray-200">Frog (Smooth)</span></span>
         <span id="click-to-expand-hint" class="text-emerald-400/80 cursor-pointer hover:underline text-[10px] hidden" onclick="toggleLoaderPanel(true)">
           Click to load another
         </span>
@@ -426,15 +477,28 @@
     </div>
   </div>
 
-  <!-- Footer Link -->
+  <!-- Footer Links -->
   <footer class="absolute bottom-6 right-6 z-10 pointer-events-none">
-    <div class="glass-panel px-3.5 py-2 rounded-xl border border-white/10 shadow-xl pointer-events-auto">
+    <div class="glass-panel px-3.5 py-2 rounded-xl border border-white/10 shadow-xl pointer-events-auto flex items-center gap-3">
+      <a href="https://rosebud.ai?referralCode=everettp" target="_blank" rel="noopener noreferrer"
+         class="flex items-center opacity-80 hover:opacity-100 transition-opacity"
+         title="Make games and 3D experiences with Rosebud"
+         aria-label="Make games with Rosebud">
+        <img src="img/favicon-16x16-rosebud.png" alt="Rosebud" width="16" height="16" class="w-4 h-4 block" />
+      </a>
+      <div class="h-3 w-[1px] bg-white/10"></div>
+      <a href="https://www.meshy.ai/?utm_source=meshy&amp;utm_medium=referral-program&amp;utm_content=3PIQHA&amp;share_type=invite-friends" target="_blank" rel="noopener noreferrer"
+         class="flex items-center opacity-80 hover:opacity-100 transition-opacity"
+         title="Generate 3D models with Meshy"
+         aria-label="Generate 3D models with Meshy">
+        <img src="img/favicon-16x16-meshy.png" alt="Meshy" width="16" height="16" class="w-4 h-4 block" />
+      </a>
+      <div class="h-3 w-[1px] bg-white/10"></div>
       <a href="https://www.mediagroup.dev/" target="_blank" rel="noopener noreferrer"
-         class="text-[11px] text-gray-400 hover:text-emerald-400 transition-colors flex items-center gap-1.5"
-         title="Visit Tri-State Media Group">
-        <i class="fa-solid fa-globe text-emerald-500/70"></i>
-        <span>Tri-State Media Group</span>
-        <span class="text-gray-600" aria-hidden="true">&rarr;</span>
+         class="flex items-center opacity-80 hover:opacity-100 transition-opacity"
+         title="Visit Tri-State Media Group"
+         aria-label="Tri-State Media Group">
+        <img src="favicon-16x16.png" alt="Tri-State Media Group" width="16" height="16" class="w-4 h-4 block" />
       </a>
     </div>
   </footer>
