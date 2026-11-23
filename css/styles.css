@@ -1342,8 +1342,31 @@ body.modal-open {
   margin: 0 auto;
 }
 
+/* Kindri badge is near-square — cap it so it doesn't tower over the copy. */
+#kindri .game-feature-media img {
+  max-width: 340px;
+  margin: 0 auto;
+}
+
 .game-feature:hover .game-feature-media img {
   transform: scale(1.05);
+}
+
+.game-pillars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 25px;
+  padding: 0;
+  list-style: none;
+}
+
+.game-pillars li {
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  border: 1px solid rgba(192, 201, 214, 0.2);
+  border-radius: 999px;
 }
 
 .game-feature-body {
@@ -1386,6 +1409,10 @@ body.modal-open {
 
   #games .game-feature-media img {
     max-width: 320px;
+  }
+
+  #kindri .game-feature-media img {
+    max-width: 260px;
   }
 }
 
