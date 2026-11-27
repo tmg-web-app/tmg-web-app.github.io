@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tmg-web-app",
+  "name": "mediagroup-dev-site",
   "compatibility_date": "2026-11-27",
   "assets": {
     "directory": ".",
