@@ -1,0 +1,17 @@
+/images/*
+  Cache-Control: public, max-age=2592000
+
+/video/*
+  Cache-Control: public, max-age=2592000
+
+/css/*
+  Cache-Control: public, max-age=86400
+
+/js/*
+  Cache-Control: public, max-age=86400
+
+/apps/model-viewer/assets/*
+  Cache-Control: public, max-age=2592000
+
+/apps/model-viewer/draco/*
+  Cache-Control: public, max-age=2592000

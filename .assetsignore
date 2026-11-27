@@ -1,0 +1,32 @@
+# Not part of the published site (gitignore syntax)
+.agents
+.dyad
+.firecrawl
+.git
+.github
+.gitignore
+.opencode
+.assetsignore
+node_modules
+contact-worker
+contact-worker-backup
+db
+research
+snippets
+src
+*.zip
+*.md
+skills-lock.json
+package.json
+package-lock.json
+tsconfig*.json
+wrangler.jsonc
+CNAME
+_config.yml
+index-old.html
+
+# Model viewer build sources
+apps/model-viewer/index.src.html
+apps/model-viewer/tailwind.config.js
+apps/model-viewer/tailwind.input.css
+apps/model-viewer/about.txt
