@@ -2,7 +2,7 @@
 
 ## What this repo is
 
-Tri-State Media Group (`tmg-web-app.github.io`) — a GitHub Pages marketing site. Two parallel architectures coexist:
+The Media Group (`tmg-web-app.github.io`) — a GitHub Pages marketing site. Two parallel architectures coexist:
 
 1. **Static HTML site** (the live site): `index.html`, `css/styles.css`, `js/main.js`. Vanilla HTML/CSS/JS. No build step needed.
 2. **React/Vite SPA** (scaffolded, not yet primary): `src/App.tsx`, `src/main.tsx`, `src/pages/Index.tsx`. Basic stubs — not yet wired to the landing page content.

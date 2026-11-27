@@ -1,4 +1,4 @@
-# Competitive Intel: Media/Web Development Agencies vs. Tri-State Media Group
+# Competitive Intel: Media/Web Development Agencies vs. The Media Group
 
 **Generated:** 2026-10-23 · **Focus:** services + pricing signals + positioning (all) · **Cadence:** one-off (rerun-ready)
 
